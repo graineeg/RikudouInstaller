@@ -44,6 +44,9 @@ be detected, you can set the `extra.rikudou.installer.project-type` in
 your composer.json, the value should be the machine name of desired project
 type.
 
+If handler for the type does not exist, it will be ignored and the
+detection will still take place.
+
 Example:
 
 ```json
