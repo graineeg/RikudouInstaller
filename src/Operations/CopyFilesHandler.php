@@ -2,6 +2,8 @@
 
 namespace Rikudou\Installer\Operations;
 
+use Rikudou\Installer\Enums\OperationType;
+
 class CopyFilesHandler extends OperationHandlerBase
 {
 
@@ -93,5 +95,15 @@ class CopyFilesHandler extends OperationHandlerBase
         }
 
         return !$failed;
+    }
+
+    /**
+     * Returns the type of operation this class can handle
+     *
+     * @return string
+     */
+    public function handles(): string
+    {
+        return OperationType::COPY_FILES;
     }
 }

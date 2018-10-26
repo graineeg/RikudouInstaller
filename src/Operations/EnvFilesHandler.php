@@ -2,6 +2,8 @@
 
 namespace Rikudou\Installer\Operations;
 
+use Rikudou\Installer\Enums\OperationType;
+
 class EnvFilesHandler extends OperationHandlerBase
 {
 
@@ -69,8 +71,8 @@ class EnvFilesHandler extends OperationHandlerBase
             if (file_exists($file)) {
                 $envContent = file_get_contents($file);
 
-                $startString = "\n###BEGIN-Rikudou-Installer-{$this->package->getName()}###";
-                $endString = "###END-Rikudou-Installer-{$this->package->getName()}###";
+                $startString = "\n###BEGIN-Rikudou-Installer-{$this->packageName}###";
+                $endString = "###END-Rikudou-Installer-{$this->packageName}###";
 
                 $startPos = strpos($envContent, $startString);
                 if ($startPos === false) {
@@ -89,5 +91,15 @@ class EnvFilesHandler extends OperationHandlerBase
             }
         }
         return !$failed;
+    }
+
+    /**
+     * Returns the type of operation this class can handle
+     *
+     * @return string
+     */
+    public function handles(): string
+    {
+        return OperationType::ENV_FILES;
     }
 }

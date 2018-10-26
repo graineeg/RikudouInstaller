@@ -4,6 +4,7 @@ namespace Rikudou\Installer\Operations;
 
 use Composer\Composer;
 use Composer\Package\PackageInterface;
+use Rikudou\Installer\Helper\ClassInfoParser;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 
 abstract class OperationHandlerBase
@@ -51,5 +52,38 @@ abstract class OperationHandlerBase
      * @return bool
      */
     abstract public function uninstall(): bool;
+
+    /**
+     * Returns the type of operation this class can handle
+     *
+     * @return string
+     */
+    abstract public function handles(): string;
+
+    /**
+     * @return string[]
+     */
+    public static function getHandlers(): array
+    {
+        $handlers = [];
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator(__DIR__)
+        );
+
+        /** @var \SplFileInfo $file */
+        foreach ($iterator as $file) {
+            if ($file->isFile() && $file->getExtension() === "php") {
+                $classInfo = new ClassInfoParser($file->getRealPath());
+                if ($classInfo->isInstanceOf(self::class)) {
+                    /** @var self $handler */
+                    $handler = $classInfo->getReflection()->newInstance();
+                    $handlers[$handler->handles()] = $classInfo->getClassName();
+                }
+            }
+        }
+
+        return $handlers;
+    }
 
 }

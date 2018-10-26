@@ -4,9 +4,7 @@ namespace Rikudou\Installer;
 
 use Composer\Composer;
 use Composer\Package\PackageInterface;
-use Rikudou\Installer\Enums\OperationType;
-use Rikudou\Installer\Operations\CopyFilesHandler;
-use Rikudou\Installer\Operations\EnvFilesHandler;
+use Rikudou\Installer\Operations\OperationHandlerBase;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 
 class PackageHandler
@@ -47,21 +45,20 @@ class PackageHandler
     /**
      * Checks for supported project type operations and returns true if all operations succeeded,
      * false if any of the operations fails
-     *
      * @return bool
      */
-    public function handleUninstall(): bool
+    public function handleInstall(): bool
     {
         $result = true;
 
+        $handlers = OperationHandlerBase::getHandlers();
+
         foreach ($this->projectType->getTypes() as $type) {
-            switch ($type) {
-                case OperationType::COPY_FILES:
-                    $result = $result && (new CopyFilesHandler($this->package, $this->projectType, $this->composer))->uninstall();
-                    break;
-                case OperationType::ENV_FILES:
-                    $result = $result && (new EnvFilesHandler($this->package, $this->projectType, $this->composer))->uninstall();
-                    break;
+            if(isset($handlers[$type])) {
+                $class = $handlers[$type];
+                /** @var OperationHandlerBase $handler */
+                $handler = new $class($this->package, $this->projectType, $this->composer);
+                $result = $result && $handler->install();
             }
         }
 
@@ -71,20 +68,21 @@ class PackageHandler
     /**
      * Checks for supported project type operations and returns true if all operations succeeded,
      * false if any of the operations fails
+     *
      * @return bool
      */
-    public function handleInstall(): bool
+    public function handleUninstall(): bool
     {
         $result = true;
 
+        $handlers = OperationHandlerBase::getHandlers();
+
         foreach ($this->projectType->getTypes() as $type) {
-            switch ($type) {
-                case OperationType::COPY_FILES:
-                    $result = $result && (new CopyFilesHandler($this->package, $this->projectType, $this->composer))->install();
-                    break;
-                case OperationType::ENV_FILES:
-                    $result = $result && (new EnvFilesHandler($this->package, $this->projectType, $this->composer))->install();
-                    break;
+            if(isset($handlers[$type])) {
+                $class = $handlers[$type];
+                /** @var OperationHandlerBase $handler */
+                $handler = new $class($this->package, $this->projectType, $this->composer);
+                $result = $result && $handler->uninstall();
             }
         }
 

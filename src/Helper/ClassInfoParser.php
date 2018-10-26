@@ -52,6 +52,16 @@ class ClassInfoParser
         return $this->reflection->getName();
     }
 
+    public function isSubclassOf(string $class): bool
+    {
+        return $this->reflection->isSubclassOf($class);
+    }
+
+    public function isInstanceOf(string $classOrInterface): bool
+    {
+        return $this->implementsInterface($classOrInterface) || $this->isSubclassOf($classOrInterface);
+    }
+
     public function implementsInterface(string $interface): bool
     {
         $this->parse();
