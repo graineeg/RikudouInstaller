@@ -90,73 +90,59 @@ class ClassInfoParser
         if (!$this->parsed) {
             $this->parsed = true;
 
-            $fileReadHandle = fopen($this->file, "r");
+            $fileContent = file_get_contents($this->file);
             $className = "";
             $namespace = "";
-            $buffer = "";
 
-            while (!$className) {
-                if (feof($fileReadHandle)) {
+            $tokens = @token_get_all($fileContent);
+            $tokensCount = count($tokens);
+
+            for ($i = 0; $i < $tokensCount; $i++) {
+                if ($className) {
                     break;
                 }
-
-                $buffer .= fread($fileReadHandle, 128);
-                if (strpos($buffer, "class") === false) {
-                    continue;
-                }
-
-                $tokens = @token_get_all($buffer);
-                $tokensCount = count($tokens);
-
-                for ($i = 0; $i < $tokensCount; $i++) {
-                    if ($className) {
-                        break;
-                    }
-                    if (!$namespace && $tokens[$i][0] === T_NAMESPACE) {
-                        for ($j = $i + 1; $j < $tokensCount; $j++) {
-                            if (
-                                isset($tokens[$j][0]) &&
-                                ($tokens[$j][0] === T_STRING || $tokens[$j][0] === T_NS_SEPARATOR)
-                            ) {
-                                if (trim($tokens[$j][0])) {
-                                    $namespace .= $tokens[$j][1];
-                                }
-                            } else if ($tokens[$j] === '{' || $tokens[$j] === ';') {
-                                break;
+                if (!$namespace && $tokens[$i][0] === T_NAMESPACE) {
+                    for ($j = $i + 1; $j < $tokensCount; $j++) {
+                        if (
+                            isset($tokens[$j][0]) &&
+                            ($tokens[$j][0] === T_STRING || $tokens[$j][0] === T_NS_SEPARATOR)
+                        ) {
+                            if (trim($tokens[$j][0])) {
+                                $namespace .= $tokens[$j][1];
                             }
+                        } else if ($tokens[$j] === '{' || $tokens[$j] === ';') {
+                            break;
                         }
-                    } else if ($tokens[$i][0] === T_CLASS) {
-                        for ($j = $i; $j < $tokensCount; $j++) {
-                            if (isset($tokens[$j][0]) && $tokens[$j][0] === T_STRING) {
-                                $className = $tokens[$j][1];
-                                break;
-                            }
+                    }
+                } else if ($tokens[$i][0] === T_CLASS) {
+                    for ($j = $i; $j < $tokensCount; $j++) {
+                        if (isset($tokens[$j][0]) && $tokens[$j][0] === T_STRING) {
+                            $className = $tokens[$j][1];
+                            break;
                         }
                     }
                 }
-                if ($namespace && substr($namespace, 0, 1) !== "\\") {
-                    $namespace = "\\{$namespace}";
-                }
-                $className = "{$namespace}\\{$className}";
+            }
+            if ($namespace && substr($namespace, 0, 1) !== "\\") {
+                $namespace = "\\{$namespace}";
+            }
+            $className = "{$namespace}\\{$className}";
 
-                fclose($fileReadHandle);
+            if ($className === "\\") {
+                return;
+            }
 
-                if (!$className) {
-                    return;
-                }
+            require_once $this->file;
 
-                require_once $this->file;
+            if (!class_exists($className)) {
+                return;
+            }
 
-                if (!class_exists($className)) {
-                    return;
-                }
-
-                try {
-                    $this->reflection = new \ReflectionClass($className);
-                } catch (\ReflectionException $e) {
-                    $this->isClass = false;
-                    return;
-                }
+            try {
+                $this->reflection = new \ReflectionClass($className);
+            } catch (\ReflectionException $e) {
+                $this->isClass = false;
+                return;
             }
         }
     }
