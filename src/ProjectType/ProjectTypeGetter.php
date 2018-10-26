@@ -3,6 +3,7 @@
 namespace Rikudou\Installer\ProjectType;
 
 use Composer\Composer;
+use Rikudou\Installer\Helper\ClassInfoParser;
 
 class ProjectTypeGetter
 {
@@ -67,79 +68,16 @@ class ProjectTypeGetter
                     continue;
                 }
 
-                $fileReadHandle = fopen($file->getRealPath(), "r");
-                $className = "";
-                $namespace = "";
-                $buffer = "";
+                $classInfo = new ClassInfoParser($file->getRealPath());
 
-                while (!$className) {
-                    if (feof($fileReadHandle)) {
-                        break;
-                    }
-
-                    $buffer .= fread($fileReadHandle, 128);
-                    if (strpos($buffer, "class") === false) {
-                        continue;
-                    }
-                    $tokens = @token_get_all($buffer);
-                    $tokensCount = count($tokens);
-
-                    for ($i = 0; $i < $tokensCount; $i++) {
-                        if ($className) {
-                            break;
-                        }
-                        if (!$namespace && $tokens[$i][0] === T_NAMESPACE) {
-                            for ($j = $i + 1; $j < $tokensCount; $j++) {
-                                if (
-                                    isset($tokens[$j][0]) &&
-                                    ($tokens[$j][0] === T_STRING || $tokens[$j][0] === T_NS_SEPARATOR)
-                                ) {
-                                    if (trim($tokens[$j][0])) {
-                                        $namespace .= $tokens[$j][1];
-                                    }
-                                } else if ($tokens[$j] === '{' || $tokens[$j] === ';') {
-                                    break;
-                                }
-                            }
-                        } else if ($tokens[$i][0] === T_CLASS) {
-                            for ($j = $i; $j < $tokensCount; $j++) {
-                                if (isset($tokens[$j][0]) && $tokens[$j][0] === T_STRING) {
-                                    $className = $tokens[$j][1];
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if ($namespace && substr($namespace, 0, 1) !== "\\") {
-                        $namespace = "\\{$namespace}";
-                    }
-                    $className = "{$namespace}\\{$className}";
-                }
-
-                fclose($fileReadHandle);
-
-                if(!$className) {
-                    continue;
-                }
-
-                require_once $file->getRealPath();
-
-                if (!class_exists($className)) {
-                    continue;
-                }
-
-                try {
-                    $reflection = new \ReflectionClass($className);
-                } catch (\ReflectionException $e) {
-                    continue;
-                }
                 if (
-                    !$reflection->isInstantiable() ||
-                    !$reflection->implementsInterface(ProjectTypeInterface::class)
+                    !$classInfo->isValidClass() ||
+                    !$classInfo->isInstantiable() ||
+                    !$classInfo->implementsInterface(ProjectTypeInterface::class)
                 ) {
                     continue;
                 }
-                $classes[$reflection->newInstance()->getMachineName()] = $reflection->getName();
+                $classes[$classInfo->getReflection()->newInstance()->getMachineName()] = $classInfo->getClassName();
             }
         }
 
