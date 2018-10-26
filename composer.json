@@ -2,6 +2,7 @@
   "name": "rikudou/installer",
   "type": "composer-plugin",
   "license": "WTFPL",
+  "description": "Composer plugin for automatic configuration of packages",
   "authors": [
     {
       "name": "Dominik Chrástecký",
