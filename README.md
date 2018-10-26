@@ -74,6 +74,10 @@ Currently only the 'copy files' operation type is supported.
 Everything from the operation dir (`files`) will be copied to the root
 directory of project.
 
+On package uninstall any file that is identical in content to the
+one defined in package will be removed and any empty directory
+defined in directory structure will be removed.
+
 - directory structure:
     - `.installer/[project-type-dir]/files`
 - example directories:
