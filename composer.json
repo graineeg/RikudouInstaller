@@ -1,0 +1,26 @@
+{
+  "name": "rikudou/installer",
+  "type": "composer-plugin",
+  "license": "WTFPL",
+  "authors": [
+    {
+      "name": "Dominik Chrástecký",
+      "email": "dominik@chrastecky.cz"
+    }
+  ],
+  "require": {
+    "php": ">=7.2",
+    "composer-plugin-api": "^1.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Rikudou\\Installer\\": "src/"
+    }
+  },
+  "require-dev": {
+    "composer/composer": "^1.7"
+  },
+  "extra": {
+    "class": "Rikudou\\Installer\\Installer"
+  }
+}
