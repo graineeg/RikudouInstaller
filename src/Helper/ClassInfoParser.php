@@ -59,7 +59,21 @@ class ClassInfoParser
 
     public function isInstanceOf(string $classOrInterface): bool
     {
-        return $this->implementsInterface($classOrInterface) || $this->isSubclassOf($classOrInterface);
+        try {
+            if ($this->implementsInterface($classOrInterface)) {
+                return true;
+            }
+        } catch (\ReflectionException $e) {
+            // do nothing
+        }
+        try {
+            if ($this->isSubclassOf($classOrInterface)) {
+                return true;
+            }
+        } catch (\ReflectionException $e) {
+            // do nothing
+        }
+        return false;
     }
 
     public function implementsInterface(string $interface): bool

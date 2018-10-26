@@ -47,6 +47,7 @@ class EnvFilesHandler extends OperationHandlerBase
                 }
             }
         }
+
         return !$failed;
     }
 
@@ -85,11 +86,12 @@ class EnvFilesHandler extends OperationHandlerBase
                 $endPos += strlen($endString);
 
                 $resultEnv = substr_replace($envContent, "", $startPos, $endPos - $startPos);
-                if (!file_put_contents($file, $resultEnv, LOCK_EX)) {
+                if (file_put_contents($file, $resultEnv, LOCK_EX) === false) {
                     $failed = true;
                 }
             }
         }
+
         return !$failed;
     }
 

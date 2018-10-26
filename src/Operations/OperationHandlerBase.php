@@ -54,7 +54,8 @@ abstract class OperationHandlerBase
     abstract public function uninstall(): bool;
 
     /**
-     * Returns the type of operation this class can handle
+     * Returns the type of operation this class can handle.
+     * At this method the constructor parameters are not yet available.
      *
      * @return string
      */
@@ -75,9 +76,9 @@ abstract class OperationHandlerBase
         foreach ($iterator as $file) {
             if ($file->isFile() && $file->getExtension() === "php") {
                 $classInfo = new ClassInfoParser($file->getRealPath());
-                if ($classInfo->isInstanceOf(self::class)) {
+                if ($classInfo->isInstanceOf(self::class) && $classInfo->isInstantiable()) {
                     /** @var self $handler */
-                    $handler = $classInfo->getReflection()->newInstance();
+                    $handler = $classInfo->getReflection()->newInstanceWithoutConstructor();
                     $handlers[$handler->handles()] = $classInfo->getClassName();
                 }
             }

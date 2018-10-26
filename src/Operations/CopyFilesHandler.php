@@ -45,6 +45,7 @@ class CopyFilesHandler extends OperationHandlerBase
                 }
             }
         }
+
         return !$failed;
     }
 
