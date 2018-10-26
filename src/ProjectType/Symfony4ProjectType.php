@@ -30,6 +30,7 @@ class Symfony4ProjectType implements ProjectTypeInterface
     {
         return [
             OperationType::COPY_FILES,
+            OperationType::ENV_FILES,
         ];
     }
 
