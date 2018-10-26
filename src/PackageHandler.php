@@ -162,7 +162,7 @@ class PackageHandler
                 $endPos += strlen($endString);
 
                 $resultEnv = substr_replace($envContent, "", $startPos, $endPos - $startPos);
-                file_put_contents($file, $resultEnv);
+                file_put_contents($file, $resultEnv, LOCK_EX);
             }
         }
         return true;
@@ -265,7 +265,7 @@ class PackageHandler
                 foreach ($files as $file) {
                     $targetEnvFile = "{$this->projectRootDir}/$file";
                     if (file_exists($targetEnvFile)) {
-                        if (!file_put_contents($targetEnvFile, $content, FILE_APPEND)) {
+                        if (!file_put_contents($targetEnvFile, $content, FILE_APPEND | LOCK_EX)) {
                             $failed = true;
                         }
                     }
