@@ -5,10 +5,13 @@ namespace Rikudou\Installer\Operations;
 use Composer\Composer;
 use Composer\Package\PackageInterface;
 use Rikudou\Installer\Helper\ClassInfoParser;
+use Rikudou\Installer\Helper\PreloadInterface;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 
-abstract class OperationHandlerBase
+abstract class OperationHandlerBase implements PreloadInterface
 {
+
+    private static $handlers = null;
 
     /**
      * @var ProjectTypeInterface
@@ -68,23 +71,34 @@ abstract class OperationHandlerBase
     {
         $handlers = [];
 
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator(__DIR__)
-        );
+        try {
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator(__DIR__)
+            );
 
-        /** @var \SplFileInfo $file */
-        foreach ($iterator as $file) {
-            if ($file->isFile() && $file->getExtension() === "php") {
-                $classInfo = new ClassInfoParser($file->getRealPath());
-                if ($classInfo->isInstanceOf(self::class) && $classInfo->isInstantiable()) {
-                    /** @var self $handler */
-                    $handler = $classInfo->getReflection()->newInstanceWithoutConstructor();
-                    $handlers[$handler->handles()] = $classInfo->getClassName();
+            /** @var \SplFileInfo $file */
+            foreach ($iterator as $file) {
+                if ($file->isFile() && $file->getExtension() === "php") {
+                    $classInfo = new ClassInfoParser($file->getRealPath());
+                    if ($classInfo->isInstanceOf(self::class) && $classInfo->isInstantiable()) {
+                        /** @var self $handler */
+                        $handler = $classInfo->getReflection()->newInstanceWithoutConstructor();
+                        $handlers[$handler->handles()] = $classInfo->getClassName();
+                    }
                 }
             }
+        } catch (\UnexpectedValueException $exception) {
+            $handlers = self::$handlers;
         }
 
         return $handlers;
+    }
+
+    public static function preload(Composer $composer): void
+    {
+        if(is_null(self::$handlers)) {
+            self::$handlers = static::getHandlers();
+        }
     }
 
 }

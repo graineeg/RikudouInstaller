@@ -4,9 +4,12 @@ namespace Rikudou\Installer\ProjectType;
 
 use Composer\Composer;
 use Rikudou\Installer\Helper\ClassInfoParser;
+use Rikudou\Installer\Helper\PreloadInterface;
 
-class ProjectTypeGetter
+class ProjectTypeGetter implements PreloadInterface
 {
+
+    private static $classes = null;
 
     /**
      * Returns the project type, either from composer extra section or it tries to detect from file structure.
@@ -54,34 +57,44 @@ class ProjectTypeGetter
 
         $directories[] = __DIR__;
 
-        foreach ($directories as $directory) {
-            $iterator = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($directory)
-            );
+        try {
+            foreach ($directories as $directory) {
+                $iterator = new \RecursiveIteratorIterator(
+                    new \RecursiveDirectoryIterator($directory)
+                );
 
-            /** @var \SplFileInfo $file */
-            foreach ($iterator as $file) {
-                if (!$file->isFile()) {
-                    continue;
-                }
-                if ($file->getExtension() !== "php") {
-                    continue;
-                }
+                /** @var \SplFileInfo $file */
+                foreach ($iterator as $file) {
+                    if (!$file->isFile()) {
+                        continue;
+                    }
+                    if ($file->getExtension() !== "php") {
+                        continue;
+                    }
 
-                $classInfo = new ClassInfoParser($file->getRealPath());
+                    $classInfo = new ClassInfoParser($file->getRealPath());
 
-                if (
-                    !$classInfo->isValidClass() ||
-                    !$classInfo->isInstantiable() ||
-                    !$classInfo->implementsInterface(ProjectTypeInterface::class)
-                ) {
-                    continue;
+                    if (
+                        !$classInfo->isValidClass() ||
+                        !$classInfo->isInstantiable() ||
+                        !$classInfo->implementsInterface(ProjectTypeInterface::class)
+                    ) {
+                        continue;
+                    }
+                    $classes[$classInfo->getReflection()->newInstance()->getMachineName()] = $classInfo->getClassName();
                 }
-                $classes[$classInfo->getReflection()->newInstance()->getMachineName()] = $classInfo->getClassName();
             }
+        } catch (\UnexpectedValueException $exception) {
+            $classes = self::$classes;
         }
 
         return $classes;
     }
 
+    public static function preload(Composer $composer): void
+    {
+        if(is_null(self::$classes)) {
+            self::$classes = self::assignClasses($composer);
+        }
+    }
 }

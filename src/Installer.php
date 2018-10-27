@@ -12,6 +12,7 @@ use Composer\Installer\PackageEvents;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\ScriptEvents;
+use Rikudou\Installer\Helper\PreloadInterface;
 use Rikudou\Installer\ProjectType\ProjectTypeGetter;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 
@@ -119,10 +120,10 @@ class Installer implements PluginInterface, EventSubscriberInterface
                 $this->io->write(sprintf("<info>Rikudou installer: Package %s ignored in composer settings</info>", $package->getName()));
                 return;
             }
-            if($package->getName() === "rikudou/installer") {
-                $this->enabled = false;
-                return;
-            }
+//            if ($package->getName() === "rikudou/installer") {
+//                $this->enabled = false;
+//                return;
+//            }
             $this->projectType = ProjectTypeGetter::get($this->composer);
             $handler = new PackageHandler($package, $this->projectType, $this->composer);
             if ($handler->canBeHandled()) {
@@ -207,6 +208,20 @@ class Installer implements PluginInterface, EventSubscriberInterface
                 require_once $file->getRealPath();
             }
         }
+
+        $definedClasses = get_declared_classes();
+        /** @var string $definedClass */
+        foreach ($definedClasses as $definedClass) {
+            try {
+                $reflection = new \ReflectionClass($definedClass);
+                if($reflection->implementsInterface(PreloadInterface::class)) {
+                    call_user_func([$definedClass, "preload"], $this->composer);
+                }
+            } catch (\ReflectionException $e) {
+                continue;
+            }
+        }
+
     }
 
 }
