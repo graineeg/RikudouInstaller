@@ -119,6 +119,10 @@ class Installer implements PluginInterface, EventSubscriberInterface
                 $this->io->write(sprintf("<info>Rikudou installer: Package %s ignored in composer settings</info>", $package->getName()));
                 return;
             }
+            if($package->getName() === "rikudou/installer") {
+                $this->enabled = false;
+                return;
+            }
             $this->projectType = ProjectTypeGetter::get($this->composer);
             $handler = new PackageHandler($package, $this->projectType, $this->composer);
             if ($handler->canBeHandled()) {
