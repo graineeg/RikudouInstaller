@@ -70,8 +70,6 @@ remove them
 
 ## Operation types
 
-Currently only the 'copy files' operation type is supported.
-
 ### Copy files operation
 
 Everything from the operation dir (`files`) will be copied to the root
@@ -88,6 +86,19 @@ defined in directory structure will be removed.
     - `.installer/symfony/files`
 - example full directory structure
     - `.installer/symfony/files/config/packages/my_config_file.yaml`
+    
+### Env variables operation
+
+Define your env variables in `.env` file and the content will be copied
+to `.env`, `.env.dist` and `.env.example` files in project root (if these files exist).
+
+On package uninstall the environment variables will be deleted from the affected files.
+
+- directory structure:
+    - `.installer/[project-type-dir]/.env`
+- example file path:
+    - `.installer/symfony4/.env`
+    - `.installer/symfony/.env`
     
 ## Disable Rikudou Installer
 
