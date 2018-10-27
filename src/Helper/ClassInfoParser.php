@@ -28,12 +28,22 @@ class ClassInfoParser
         $this->file = $file;
     }
 
+    /**
+     * If the file could not be parsed, returns false
+     *
+     * @return bool
+     */
     public function isValidClass(): bool
     {
         $this->parse();
         return $this->reflection !== null;
     }
 
+    /**
+     * Whether new instance of the class can be created
+     *
+     * @return bool
+     */
     public function isInstantiable(): bool
     {
         $this->parse();
@@ -43,6 +53,11 @@ class ClassInfoParser
         return $this->reflection->isInstantiable();
     }
 
+    /**
+     * Returns class name
+     *
+     * @return string
+     */
     public function getClassName(): string
     {
         $this->parse();
@@ -52,11 +67,24 @@ class ClassInfoParser
         return $this->reflection->getName();
     }
 
+    /**
+     * Checks whether the parsed class extends the class in $class param
+     *
+     * @param string $class
+     * @return bool
+     */
     public function isSubclassOf(string $class): bool
     {
         return $this->reflection->isSubclassOf($class);
     }
 
+    /**
+     * Returns true if the class implements interface or is subclass of given class.
+     * It is pretty much the same as instanceof operator.
+     *
+     * @param string $classOrInterface
+     * @return bool
+     */
     public function isInstanceOf(string $classOrInterface): bool
     {
         try {
@@ -76,6 +104,12 @@ class ClassInfoParser
         return false;
     }
 
+    /**
+     * Returns true if parsed class implements given interface
+     *
+     * @param string $interface
+     * @return bool
+     */
     public function implementsInterface(string $interface): bool
     {
         $this->parse();
@@ -85,6 +119,9 @@ class ClassInfoParser
         return $this->reflection->implementsInterface($interface);
     }
 
+    /**
+     * Parses given file, uses tokenization
+     */
     private function parse(): void
     {
         if (!$this->parsed) {

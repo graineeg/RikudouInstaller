@@ -10,7 +10,7 @@ class CopyFilesHandler extends OperationHandlerBase
     /**
      * Copies all files from package to target directory in project root
      *  - files that already exist are not copied
-     *  - returns false if a file could not be copied or if a directory could not be created
+     *
      * @return OperationResult
      */
     public function install(): OperationResult
@@ -59,7 +59,6 @@ class CopyFilesHandler extends OperationHandlerBase
      * Tries to remove all files that were automatically installed.
      *  - removes empty directories
      *  - removes installed files if their content is identical to the fresh new file
-     *  - returns false if the removal of identical file could not be removed
      *  - uses sha1 for checksum
      *
      * @return OperationResult
