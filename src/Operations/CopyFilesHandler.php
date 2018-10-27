@@ -11,15 +11,17 @@ class CopyFilesHandler extends OperationHandlerBase
      * Copies all files from package to target directory in project root
      *  - files that already exist are not copied
      *  - returns false if a file could not be copied or if a directory could not be created
-     * @return bool
+     * @return OperationResult
      */
-    public function install(): bool
+    public function install(): OperationResult
     {
-        $failed = false;
+        $exists = false;
+        $result = new OperationResult();
 
         $sourcePath = "{$this->packageInstallDir}/.installer/%s/files";
         foreach ($this->projectType->getProjectDirs() as $projectDir) {
             if (is_dir(sprintf($sourcePath, $projectDir))) {
+                $exists = true;
                 /** @var \RecursiveIteratorIterator|\RecursiveDirectoryIterator $iterator */
                 $iterator = new \RecursiveIteratorIterator(
                     new \RecursiveDirectoryIterator(
@@ -34,19 +36,23 @@ class CopyFilesHandler extends OperationHandlerBase
                     if ($file->isDir()) {
                         if (!is_dir($target)) {
                             if (!mkdir($target)) {
-                                $failed = true;
+                                $result->addErrorMessage("<error>Could not create target directory '$target'</error>");
                             }
                         }
                     } else if (!file_exists($target)) {
                         if (!copy($file->getRealPath(), $target)) {
-                            $failed = true;
+                            $result->addErrorMessage("<error>Could not copy file to '$target'</error>");
                         }
                     }
                 }
             }
         }
 
-        return !$failed;
+        if (!$result->isFailure() && $exists) {
+            $result->addStatusMessage("Successfully copied files from package {$this->packageName}");
+        }
+
+        return $result;
     }
 
     /**
@@ -56,16 +62,18 @@ class CopyFilesHandler extends OperationHandlerBase
      *  - returns false if the removal of identical file could not be removed
      *  - uses sha1 for checksum
      *
-     * @return bool
+     * @return OperationResult
      */
-    public function uninstall(): bool
+    public function uninstall(): OperationResult
     {
-        $failed = false;
+        $exists = false;
+        $result = new OperationResult();
 
         $sourcePath = "{$this->packageInstallDir}/.installer/%s/files";
         foreach ($this->projectType->getProjectDirs() as $projectDir) {
             $directory = sprintf($sourcePath, $projectDir);
             if (is_dir($directory)) {
+                $exists = true;
                 /** @var \RecursiveIteratorIterator|\RecursiveDirectoryIterator $iteratorPackage */
                 $iteratorPackage = new \RecursiveIteratorIterator(
                     new \RecursiveDirectoryIterator(
@@ -87,7 +95,7 @@ class CopyFilesHandler extends OperationHandlerBase
                         $hashSource = hash_file("sha1", $file->getRealPath());
                         if ($hashSource === $hashTarget) {
                             if (!@unlink($target)) {
-                                $failed = true;
+                                $result->addErrorMessage("<error>Could not delete file '$target'</error>");
                             }
                         }
                     }
@@ -95,7 +103,11 @@ class CopyFilesHandler extends OperationHandlerBase
             }
         }
 
-        return !$failed;
+        if(!$result->isFailure() && $exists) {
+            $result->addStatusMessage("Successfully uninstalled files for {$this->packageName}");
+        }
+
+        return $result;
     }
 
     /**

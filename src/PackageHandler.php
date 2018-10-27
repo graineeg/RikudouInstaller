@@ -5,6 +5,7 @@ namespace Rikudou\Installer;
 use Composer\Composer;
 use Composer\Package\PackageInterface;
 use Rikudou\Installer\Operations\OperationHandlerBase;
+use Rikudou\Installer\Operations\OperationResult;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 
 class PackageHandler
@@ -43,13 +44,13 @@ class PackageHandler
     }
 
     /**
-     * Checks for supported project type operations and returns true if all operations succeeded,
-     * false if any of the operations fails
-     * @return bool
+     * Checks for supported project type operations and returns array of OperationResult instances
+     *
+     * @return OperationResult[]
      */
-    public function handleInstall(): bool
+    public function handleInstall(): array
     {
-        $result = true;
+        $result = [];
 
         $handlers = OperationHandlerBase::getHandlers();
 
@@ -58,7 +59,7 @@ class PackageHandler
                 $class = $handlers[$type];
                 /** @var OperationHandlerBase $handler */
                 $handler = new $class($this->package, $this->projectType, $this->composer);
-                $result = $result && $handler->install();
+                $result[] = $handler->install();
             }
         }
 
@@ -66,14 +67,13 @@ class PackageHandler
     }
 
     /**
-     * Checks for supported project type operations and returns true if all operations succeeded,
-     * false if any of the operations fails
+     * Checks for supported project type operations and returns array of OperationResult instances
      *
-     * @return bool
+     * @return OperationResult[]
      */
-    public function handleUninstall(): bool
+    public function handleUninstall(): array
     {
-        $result = true;
+        $result = [];
 
         $handlers = OperationHandlerBase::getHandlers();
 
@@ -82,7 +82,7 @@ class PackageHandler
                 $class = $handlers[$type];
                 /** @var OperationHandlerBase $handler */
                 $handler = new $class($this->package, $this->projectType, $this->composer);
-                $result = $result && $handler->uninstall();
+                $result[] = $handler->uninstall();
             }
         }
 

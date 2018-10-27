@@ -97,6 +97,8 @@ class Installer implements PluginInterface, EventSubscriberInterface
 
         $this->enabled = $this->composer->getPackage()->getExtra()["rikudou"]["installer"]["enabled"] ?? true;
         $this->excluded = $this->composer->getPackage()->getExtra()['rikudou']['installer']['exclude'] ?? [];
+
+        $this->preload();
     }
 
     /**
@@ -117,17 +119,17 @@ class Installer implements PluginInterface, EventSubscriberInterface
                 $this->io->write(sprintf("<info>Rikudou installer: Package %s ignored in composer settings</info>", $package->getName()));
                 return;
             }
-            if($package->getName() === "rikudou/installer") {
-                $this->enabled = false;
-                return;
-            }
             $this->projectType = ProjectTypeGetter::get($this->composer);
             $handler = new PackageHandler($package, $this->projectType, $this->composer);
             if ($handler->canBeHandled()) {
-                if (!$handler->handleUninstall()) {
-                    $this->io->writeError(sprintf("<error>Rikudou installer: Couldn't unconfigure package %s</error>", $package->getName()));
-                } else {
-                    $this->io->write(sprintf("<info>Rikudou installer: Unconfigured package %s</info>", $package->getName()));
+                foreach ($handler->handleUninstall() as $operationResult) {
+                    foreach ($operationResult->getMessagesCollection()->getGenerator() as $message) {
+                        if ($message->isStatusMessage() || $message->isWarningMessage()) {
+                            $this->io->write($message->getMessage());
+                        } else {
+                            $this->io->writeError($message->getMessage());
+                        }
+                    }
                 }
             }
         }
@@ -169,10 +171,33 @@ class Installer implements PluginInterface, EventSubscriberInterface
         if (!$handler->canBeHandled()) {
             return;
         }
-        if (!$handler->handleInstall()) {
-            $this->io->writeError(sprintf("<error>Rikudou installer: Couldn't configure package %s</error>", $package->getName()));
-        } else {
-            $this->io->write(sprintf("<info>Rikudou installer: Configured package %s</info>", $package->getName()));
+        foreach ($handler->handleInstall() as $operationResult) {
+            foreach ($operationResult->getMessagesCollection()->getGenerator() as $message) {
+                if ($message->isStatusMessage() || $message->isWarningMessage()) {
+                    $this->io->write($message->getMessage());
+                } else {
+                    $this->io->writeError($message->getMessage());
+                }
+            }
+        }
+    }
+
+    /**
+     * Preloads all classes
+     */
+    private function preload(): void
+    {
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator(
+                __DIR__
+            )
+        );
+
+        /** @var \SplFileInfo $file */
+        foreach ($iterator as $file) {
+            if ($file->isFile() && $file->getExtension() === "php") {
+                require_once $file->getRealPath();
+            }
         }
     }
 

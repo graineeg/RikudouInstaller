@@ -15,16 +15,18 @@ class EnvFilesHandler extends OperationHandlerBase
      *  - .env
      * If any of the file exists, the env content is written into it
      *
-     * @return bool
+     * @return OperationResult
      */
-    public function install(): bool
+    public function install(): OperationResult
     {
-        $failed = false;
+        $exists = false;
+        $result = new OperationResult();
 
         $sourceFile = "{$this->packageInstallDir}/.installer/%s/.env";
         foreach ($this->projectType->getProjectDirs() as $projectDir) {
             $envFile = sprintf($sourceFile, $projectDir);
             if (is_file($envFile)) {
+                $exists = true;
                 $content = "\n";
                 $content .= "###BEGIN-Rikudou-Installer-{$this->packageName}###\n";
                 $content .= "# Do not remove the above line if you want the installer to be able to delete the content on uninstall\n";
@@ -41,14 +43,18 @@ class EnvFilesHandler extends OperationHandlerBase
                     $targetEnvFile = "{$this->projectRootDir}/$file";
                     if (file_exists($targetEnvFile)) {
                         if (!file_put_contents($targetEnvFile, $content, FILE_APPEND | LOCK_EX)) {
-                            $failed = true;
+                            $result->addErrorMessage("<error>Could not copy env variables from {$this->packageName}</error>");
                         }
                     }
                 }
             }
         }
 
-        return !$failed;
+        if(!$result->isFailure() && $exists) {
+            $result->addStatusMessage("Successfully copied env variables from {$this->packageName}");
+        }
+
+        return $result;
     }
 
     /**
@@ -57,11 +63,13 @@ class EnvFilesHandler extends OperationHandlerBase
      *  - .env.dist
      *  - .env
      *
-     * @return bool
+     * @return OperationResult
      */
-    public function uninstall(): bool
+    public function uninstall(): OperationResult
     {
-        $failed = false;
+        $exists = false;
+        $result = new OperationResult();
+
         $files = [
             ".env.example",
             ".env.dist",
@@ -70,6 +78,7 @@ class EnvFilesHandler extends OperationHandlerBase
         foreach ($files as $file) {
             $file = "{$this->projectRootDir}/{$file}";
             if (file_exists($file)) {
+                $exists = true;
                 $envContent = file_get_contents($file);
 
                 $startString = "\n###BEGIN-Rikudou-Installer-{$this->packageName}###";
@@ -87,12 +96,16 @@ class EnvFilesHandler extends OperationHandlerBase
 
                 $resultEnv = substr_replace($envContent, "", $startPos, $endPos - $startPos);
                 if (file_put_contents($file, $resultEnv, LOCK_EX) === false) {
-                    $failed = true;
+                    $result->addErrorMessage("Could not copy env variables from {$this->packageName}");
                 }
             }
         }
 
-        return !$failed;
+        if($result->isSuccess() && $exists) {
+            $result->addStatusMessage("Successfully copied env variables from {$this->packageName}");
+        }
+
+        return $result;
     }
 
     /**

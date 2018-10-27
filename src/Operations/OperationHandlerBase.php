@@ -42,16 +42,16 @@ abstract class OperationHandlerBase
     /**
      * Handle installation for given operation
      *
-     * @return bool
+     * @return OperationResult
      */
-    abstract public function install(): bool;
+    abstract public function install(): OperationResult;
 
     /**
      * Handle uninstallation for given operation
      *
-     * @return bool
+     * @return OperationResult
      */
-    abstract public function uninstall(): bool;
+    abstract public function uninstall(): OperationResult;
 
     /**
      * Returns the type of operation this class can handle.
