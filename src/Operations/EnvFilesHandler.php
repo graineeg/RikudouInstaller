@@ -78,7 +78,6 @@ class EnvFilesHandler extends OperationHandlerBase
         foreach ($files as $file) {
             $file = "{$this->projectRootDir}/{$file}";
             if (file_exists($file)) {
-                $exists = true;
                 $envContent = file_get_contents($file);
 
                 $startString = "\n###BEGIN-Rikudou-Installer-{$this->packageName}###";
@@ -93,6 +92,8 @@ class EnvFilesHandler extends OperationHandlerBase
                     continue;
                 }
                 $endPos += strlen($endString);
+
+                $exists = true;
 
                 $resultEnv = substr_replace($envContent, "", $startPos, $endPos - $startPos);
                 if (file_put_contents($file, $resultEnv, LOCK_EX) === false) {

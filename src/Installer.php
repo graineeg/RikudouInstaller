@@ -122,6 +122,7 @@ class Installer implements PluginInterface, EventSubscriberInterface
             $this->projectType = ProjectTypeGetter::get($this->composer);
             $handler = new PackageHandler($package, $this->projectType, $this->composer);
             if ($handler->canBeHandled()) {
+                $this->io->write("<comment>=== [Rikudou Installer] ===</comment>");
                 foreach ($handler->handleUninstall() as $operationResult) {
                     foreach ($operationResult->getMessagesCollection()->getGenerator() as $message) {
                         if ($message->isStatusMessage() || $message->isWarningMessage()) {
@@ -131,6 +132,7 @@ class Installer implements PluginInterface, EventSubscriberInterface
                         }
                     }
                 }
+                $this->io->write("<comment>=== [Rikudou Installer] ===</comment>");
             }
         }
     }
@@ -171,6 +173,7 @@ class Installer implements PluginInterface, EventSubscriberInterface
         if (!$handler->canBeHandled()) {
             return;
         }
+        $this->io->write("<comment>=== [Rikudou Installer] ===</comment>");
         foreach ($handler->handleInstall() as $operationResult) {
             foreach ($operationResult->getMessagesCollection()->getGenerator() as $message) {
                 if ($message->isStatusMessage() || $message->isWarningMessage()) {
@@ -180,6 +183,7 @@ class Installer implements PluginInterface, EventSubscriberInterface
                 }
             }
         }
+        $this->io->write("<comment>=== [Rikudou Installer] ===</comment>");
     }
 
     /**

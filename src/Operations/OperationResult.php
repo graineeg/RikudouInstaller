@@ -30,7 +30,7 @@ final class OperationResult
             throw new \InvalidArgumentException("Message must be a string or " . Message::class);
         }
         if (is_string($message)) {
-            $message = new Message($messageType, $messageType);
+            $message = new Message($message, $messageType);
         }
         $this->getMessagesCollection()->addMessage($message);
         return $this;
