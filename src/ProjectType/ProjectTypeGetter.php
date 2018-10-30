@@ -34,8 +34,18 @@ class ProjectTypeGetter implements PreloadInterface
             /** @var ProjectTypeInterface $instance */
             $instance = new $class;
             foreach ($instance->getDirs() as $dir) {
-                if (file_exists("{$rootDir}/{$dir}")) {
-                    return $instance;
+                if(is_array($dir)) {
+                    $exists = true;
+                    foreach ($dir as $requiredDir) {
+                        $exists = $exists && file_exists("{$rootDir}/{$requiredDir}");
+                    }
+                    if($exists) {
+                        return $instance;
+                    }
+                } else {
+                    if (file_exists("{$rootDir}/{$dir}")) {
+                        return $instance;
+                    }
                 }
             }
         }
