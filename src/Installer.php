@@ -121,6 +121,9 @@ class Installer implements PluginInterface, EventSubscriberInterface
                 return;
             }
             $this->projectType = ProjectTypeGetter::get($this->composer);
+            if(is_null($this->projectType)) {
+                return;
+            }
             $handler = new PackageHandler($package, $this->projectType, $this->composer);
             if ($handler->canBeHandled()) {
                 $this->io->write("<comment>=== [Rikudou Installer] ===</comment>");
