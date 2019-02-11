@@ -31,6 +31,7 @@ class Symfony4ProjectType implements ProjectTypeInterface
         return [
             OperationType::COPY_FILES,
             OperationType::ENV_FILES,
+            OperationType::REGISTER_SYMFONY_BUNDLE,
         ];
     }
 
