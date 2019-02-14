@@ -100,7 +100,7 @@ On package uninstall the environment variables will be deleted from the affected
     - `.installer/symfony4/.env`
     - `.installer/symfony/.env`
     
-### Bundle config
+### Bundle register operation
 
 Write a bundle config that will be appended to bundles.php file in Symfony.
 
