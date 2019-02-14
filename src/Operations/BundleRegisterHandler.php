@@ -81,7 +81,7 @@ class BundleRegisterHandler extends OperationHandlerBase
         foreach ($bundles as $class => $envs) {
             $content .= "    {$class}::class => [";
             foreach (array_keys($envs) as $env) {
-                $content .= "'{$envs}' => true, ";
+                $content .= "'{$env}' => true, ";
             }
             $content = substr($content, 0, -2);
             $content .= "],\n";
