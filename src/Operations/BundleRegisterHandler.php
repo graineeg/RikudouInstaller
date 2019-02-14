@@ -20,21 +20,22 @@ class BundleRegisterHandler extends OperationHandlerBase
         $sourcePath = "{$this->packageInstallDir}/.installer/%s/bundles.php";
         foreach ($this->projectType->getProjectDirs() as $projectDir) {
             $bundleFile = sprintf($sourcePath, $projectDir);
-            if(is_file($bundleFile)) {
+            if (is_file($bundleFile)) {
                 $exists = true;
 
                 $data = require $bundleFile;
-                if(!is_array($data)) {
+                if (!is_array($data)) {
                     $result->addErrorMessage("<error>The bundles.php file must return an array</error>");
                 }
 
                 $installedBundlesFile = "{$this->projectRootDir}/config/bundles.php";
-                if(file_exists($installedBundlesFile)) {
+                if (file_exists($installedBundlesFile)) {
                     $installedBundles = require $installedBundlesFile;
-                    if(is_array($installedBundles)) {
+                    if (is_array($installedBundles)) {
                         $resultingBundleData = array_merge($installedBundles, $data);
-                        $export = "<?php\nreturn ".var_export($resultingBundleData, true).";\n";
-                        if(!file_put_contents($installedBundlesFile, $export, LOCK_EX)) {
+
+                        $export = $this->dumpConfig($resultingBundleData);
+                        if (!file_put_contents($installedBundlesFile, $export, LOCK_EX)) {
                             $result->addErrorMessage("<error>Could not copy bundle content from {$this->packageName}</error>");
                         }
                     }
@@ -42,7 +43,7 @@ class BundleRegisterHandler extends OperationHandlerBase
             }
         }
 
-        if(!$result->isFailure() && $exists) {
+        if (!$result->isFailure() && $exists) {
             $result->addStatusMessage("Successfully copied Bundle information from {$this->packageName}");
         }
 
@@ -72,5 +73,21 @@ class BundleRegisterHandler extends OperationHandlerBase
     public function handles(): string
     {
         return OperationType::REGISTER_SYMFONY_BUNDLE;
+    }
+
+    private function dumpConfig(array $bundles): string
+    {
+        $content = "<?php\n\nreturn [\n";
+        foreach ($bundles as $class => $envs) {
+            $content .= "    {$class}::class => [";
+            foreach (array_keys($envs) as $env) {
+                $content .= "'{$envs}' => true, ";
+            }
+            $content = substr($content, 0, -2);
+            $content .= "],\n";
+        }
+        $content .= "];\n";
+
+        return $content;
     }
 }
