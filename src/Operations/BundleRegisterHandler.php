@@ -80,8 +80,8 @@ class BundleRegisterHandler extends OperationHandlerBase
         $content = "<?php\n\nreturn [\n";
         foreach ($bundles as $class => $envs) {
             $content .= "    {$class}::class => [";
-            foreach (array_keys($envs) as $env) {
-                $content .= "'{$env}' => true, ";
+            foreach ($envs as $env => $value) {
+                $content .= "'{$env}' => {$value}, ";
             }
             $content = substr($content, 0, -2);
             $content .= "],\n";
