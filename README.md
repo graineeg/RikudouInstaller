@@ -49,7 +49,7 @@ detection will still take place.
 
 Example:
 
-```json
+```json5
 {
   "require": {
     "php": ">=7.2"
@@ -100,6 +100,28 @@ On package uninstall the environment variables will be deleted from the affected
     - `.installer/symfony4/.env`
     - `.installer/symfony/.env`
     
+### Bundle config
+
+Write a bundle config that will be appended to bundles.php file in Symfony.
+
+On package uninstall the bundle configuration will be removed.
+
+- directory structure
+    - `.installer/[project-type-dir]/bundles.php`
+- example file path:
+    - `.installer/symfony4/bundles.php`
+
+Example content:
+
+```php
+<?php
+
+return [
+    Vendor\MyCoolBundle::class => ['all' => true],
+];
+
+```
+    
 ## Disable Rikudou Installer
 
 You can disable Rikudou Installer for your project via composer.json
@@ -111,7 +133,7 @@ the installer only for specific packages
 
 Example:
 
-```json
+```json5
 {
   "require": {
     "php": ">=7.2"
