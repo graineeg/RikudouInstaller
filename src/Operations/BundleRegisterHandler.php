@@ -25,7 +25,7 @@ class BundleRegisterHandler extends OperationHandlerBase
 
                 $data = require $bundleFile;
                 if (!is_array($data)) {
-                    $result->addErrorMessage("<error>The bundles.php file must return an array</error>");
+                    $result->addErrorMessage("<error>The bundles.php file in installer must return an array</error>");
                 }
 
                 $installedBundlesFile = "{$this->projectRootDir}/config/bundles.php";
@@ -59,7 +59,33 @@ class BundleRegisterHandler extends OperationHandlerBase
     {
         $result = new OperationResult();
 
-        $result->addErrorMessage('The Bundle operation currently does not support automatic uninstall, please remove the entries manually from config/bundles.php');
+        $sourcePath = "{$this->packageInstallDir}/.installer/%s/bundles.php";
+        foreach ($this->projectType->getProjectDirs() as $projectDir) {
+            $bundleFile = sprintf($sourcePath, $projectDir);
+            if (is_file($bundleFile)) {
+                $exists = true;
+
+                $data = require $bundleFile;
+                if (!is_array($data)) {
+                    $result->addErrorMessage("<error>The bundles.php file in installer must return an array</error>");
+                }
+
+                $installedBundlesFile = "{$this->projectRootDir}/config/bundles.php";
+                if (file_exists($installedBundlesFile)) {
+                    $installedBundles = require $installedBundlesFile;
+                    if (is_array($installedBundles)) {
+                        $export = $this->dumpConfig($installedBundles, array_keys($data));
+                        if (!file_put_contents($installedBundlesFile, $export, LOCK_EX)) {
+                            $result->addErrorMessage("<error>Could not copy bundle content from {$this->packageName}</error>");
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!$result->isFailure() && $exists) {
+            $result->addStatusMessage("Successfully uninstalled Bundle information from {$this->packageName}");
+        }
 
         return $result;
     }
@@ -75,10 +101,13 @@ class BundleRegisterHandler extends OperationHandlerBase
         return OperationType::REGISTER_SYMFONY_BUNDLE;
     }
 
-    private function dumpConfig(array $bundles): string
+    private function dumpConfig(array $bundles, array $ignoredClasses = []): string
     {
         $content = "<?php\n\nreturn [\n";
         foreach ($bundles as $class => $envs) {
+            if(in_array($class, $ignoredClasses)) {
+                continue;
+            }
             $content .= "    {$class}::class => [";
             foreach ($envs as $env => $value) {
                 $content .= "'{$env}' => {$value}, ";
