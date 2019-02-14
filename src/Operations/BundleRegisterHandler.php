@@ -110,6 +110,7 @@ class BundleRegisterHandler extends OperationHandlerBase
             }
             $content .= "    {$class}::class => [";
             foreach ($envs as $env => $value) {
+                $value = $value ? 'true' : 'false';
                 $content .= "'{$env}' => {$value}, ";
             }
             $content = substr($content, 0, -2);
