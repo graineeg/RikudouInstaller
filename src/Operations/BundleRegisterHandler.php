@@ -76,7 +76,7 @@ class BundleRegisterHandler extends OperationHandlerBase
                     if (is_array($installedBundles)) {
                         $export = $this->dumpConfig($installedBundles, array_keys($data));
                         if (!file_put_contents($installedBundlesFile, $export, LOCK_EX)) {
-                            $result->addErrorMessage("<error>Could not copy bundle content from {$this->packageName}</error>");
+                            $result->addErrorMessage("<error>Could not remove bundle content from {$this->packageName}</error>");
                         }
                     }
                 }
