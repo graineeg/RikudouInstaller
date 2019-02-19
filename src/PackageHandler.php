@@ -87,8 +87,8 @@ class PackageHandler
                 $class = $handlers[$type];
                 /** @var AbstractOperation $handler */
                 $handler = new $class($this->package, $this->projectType, $this->composer);
-                if($handler instanceof AvailableOperationInterface) {
-                    if(!$handler->isAvailable()) {
+                if ($handler instanceof AvailableOperationInterface) {
+                    if (!$handler->isAvailable()) {
                         continue;
                     }
                 }

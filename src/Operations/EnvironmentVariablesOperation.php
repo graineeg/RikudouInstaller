@@ -10,6 +10,7 @@ class EnvironmentVariablesOperation extends AbstractOperation implements Availab
 {
     private const ENV_FILES = [
         '.env.example',
+        '.env.local',
         '.env.dist',
         '.env',
     ];
@@ -18,6 +19,7 @@ class EnvironmentVariablesOperation extends AbstractOperation implements Availab
      * Puts environment variables in .env file if it exists.
      * It looks for files in this order:
      *  - .env.example
+     *  - .env.local
      *  - .env.dist
      *  - .env
      * If any of the file exists, the env content is written into it
@@ -59,6 +61,7 @@ class EnvironmentVariablesOperation extends AbstractOperation implements Availab
     /**
      * Tries to delete defined env variables from these files:
      *  - .env.example
+     *  - .env.local
      *  - .env.dist
      *  - .env
      *
