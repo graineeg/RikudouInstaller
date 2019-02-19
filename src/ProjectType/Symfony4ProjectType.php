@@ -6,7 +6,6 @@ use Rikudou\Installer\Enums\OperationType;
 
 class Symfony4ProjectType implements ProjectTypeInterface
 {
-
     /**
      * Returns list of directories the project should contain. If any directory is found, this class
      * is assumed as a valid type
@@ -16,7 +15,7 @@ class Symfony4ProjectType implements ProjectTypeInterface
     public function getDirs(): array
     {
         return [
-            "config/packages"
+            'config/packages',
         ];
     }
 
@@ -24,13 +23,14 @@ class Symfony4ProjectType implements ProjectTypeInterface
      * Returns supported types of operations for current project
      *
      * @see \Rikudou\Installer\Enums\OperationType
+     *
      * @return array
      */
     public function getTypes(): array
     {
         return [
             OperationType::COPY_FILES,
-            OperationType::ENV_FILES,
+            OperationType::ENVIRONMENT_VARIABLES,
             OperationType::REGISTER_SYMFONY_BUNDLE,
         ];
     }
@@ -42,7 +42,7 @@ class Symfony4ProjectType implements ProjectTypeInterface
      */
     public function getFriendlyName(): string
     {
-        return "Symfony 4";
+        return 'Symfony 4';
     }
 
     /**
@@ -54,8 +54,8 @@ class Symfony4ProjectType implements ProjectTypeInterface
     public function getProjectDirs(): array
     {
         return [
-            "symfony4",
-            "symfony"
+            'symfony4',
+            'symfony',
         ];
     }
 
@@ -66,6 +66,6 @@ class Symfony4ProjectType implements ProjectTypeInterface
      */
     public function getMachineName(): string
     {
-        return "symfony4";
+        return 'symfony4';
     }
 }

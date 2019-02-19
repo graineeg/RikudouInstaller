@@ -4,7 +4,6 @@ namespace Rikudou\Installer\ProjectType;
 
 interface ProjectTypeInterface
 {
-
     /**
      * Returns the project friendly name for console output
      *
@@ -31,6 +30,7 @@ interface ProjectTypeInterface
      * Returns supported types of operations for current project
      *
      * @see \Rikudou\Installer\Enums\OperationType
+     *
      * @return array
      */
     public function getTypes(): array;
@@ -42,5 +42,4 @@ interface ProjectTypeInterface
      * @return array
      */
     public function getProjectDirs(): array;
-
 }

@@ -11,7 +11,8 @@
   ],
   "require": {
     "php": "^7.1",
-    "composer-plugin-api": "^1.1"
+    "composer-plugin-api": "^1.1",
+    "rikudou/reflection-file": "^1.2"
   },
   "autoload": {
     "psr-4": {
@@ -25,9 +26,13 @@
   },
   "require-dev": {
     "composer/composer": "^1.7",
-    "phpunit/phpunit": "^7.4"
+    "phpunit/phpunit": "^7.4",
+    "friendsofphp/php-cs-fixer": "^2.14"
   },
   "extra": {
     "class": "Rikudou\\Installer\\Installer"
+  },
+  "scripts": {
+    "fixer": "php-cs-fixer fix src --verbose"
   }
 }

@@ -4,13 +4,13 @@ namespace Rikudou\Installer;
 
 use Composer\Composer;
 use Composer\Package\PackageInterface;
-use Rikudou\Installer\Operations\OperationHandlerBase;
-use Rikudou\Installer\Operations\OperationResult;
+use Rikudou\Installer\Helper\AvailableOperationInterface;
+use Rikudou\Installer\Operations\AbstractOperation;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
+use Rikudou\Installer\Result\OperationResult;
 
 class PackageHandler
 {
-
     /**
      * @var PackageInterface
      */
@@ -52,13 +52,18 @@ class PackageHandler
     {
         $result = [];
 
-        $handlers = OperationHandlerBase::getHandlers();
+        $handlers = AbstractOperation::getOperationHandlers();
 
         foreach ($this->projectType->getTypes() as $type) {
-            if(isset($handlers[$type])) {
+            if (isset($handlers[$type])) {
                 $class = $handlers[$type];
-                /** @var OperationHandlerBase $handler */
+                /** @var AbstractOperation $handler */
                 $handler = new $class($this->package, $this->projectType, $this->composer);
+                if ($handler instanceof AvailableOperationInterface) {
+                    if (!$handler->isAvailable()) {
+                        continue;
+                    }
+                }
                 $result[] = $handler->install();
             }
         }
@@ -75,18 +80,22 @@ class PackageHandler
     {
         $result = [];
 
-        $handlers = OperationHandlerBase::getHandlers();
+        $handlers = AbstractOperation::getOperationHandlers();
 
         foreach ($this->projectType->getTypes() as $type) {
-            if(isset($handlers[$type])) {
+            if (isset($handlers[$type])) {
                 $class = $handlers[$type];
-                /** @var OperationHandlerBase $handler */
+                /** @var AbstractOperation $handler */
                 $handler = new $class($this->package, $this->projectType, $this->composer);
+                if($handler instanceof AvailableOperationInterface) {
+                    if(!$handler->isAvailable()) {
+                        continue;
+                    }
+                }
                 $result[] = $handler->uninstall();
             }
         }
 
         return $result;
     }
-
 }

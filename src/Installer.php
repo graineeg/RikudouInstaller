@@ -18,7 +18,6 @@ use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 
 class Installer implements PluginInterface, EventSubscriberInterface
 {
-
     /**
      * @var Composer
      */
@@ -65,11 +64,11 @@ class Installer implements PluginInterface, EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            PackageEvents::POST_PACKAGE_INSTALL => ["handleInstall", 1],
-            PackageEvents::POST_PACKAGE_UPDATE => ["handleInstall", 1],
-            ScriptEvents::PRE_INSTALL_CMD => ["printInfo", 1],
-            ScriptEvents::PRE_UPDATE_CMD => ["printInfo", 1],
-            PackageEvents::PRE_PACKAGE_UNINSTALL => ["handleUninstall", 1],
+            PackageEvents::POST_PACKAGE_INSTALL => ['handleInstall', 1],
+            PackageEvents::POST_PACKAGE_UPDATE => ['handleInstall', 1],
+            ScriptEvents::PRE_INSTALL_CMD => ['printInfo', 1],
+            ScriptEvents::PRE_UPDATE_CMD => ['printInfo', 1],
+            PackageEvents::PRE_PACKAGE_UNINSTALL => ['handleUninstall', 1],
         ];
     }
 
@@ -79,16 +78,16 @@ class Installer implements PluginInterface, EventSubscriberInterface
     public function printInfo(): void
     {
         if (!$this->enabled) {
-            $this->io->write("<info>Rikudou installer disabled in config</info>");
+            $this->io->write('<info>Rikudou installer disabled in config</info>');
         } else {
-            $this->io->write("<info>Rikudou installer enabled</info>");
+            $this->io->write('<info>Rikudou installer enabled</info>');
         }
     }
 
     /**
      * Apply plugin modifications to Composer
      *
-     * @param Composer $composer
+     * @param Composer    $composer
      * @param IOInterface $io
      */
     public function activate(Composer $composer, IOInterface $io)
@@ -96,7 +95,7 @@ class Installer implements PluginInterface, EventSubscriberInterface
         $this->composer = $composer;
         $this->io = $io;
 
-        $this->enabled = $this->composer->getPackage()->getExtra()["rikudou"]["installer"]["enabled"] ?? true;
+        $this->enabled = $this->composer->getPackage()->getExtra()['rikudou']['installer']['enabled'] ?? true;
         $this->excluded = $this->composer->getPackage()->getExtra()['rikudou']['installer']['exclude'] ?? [];
 
         $this->preload();
@@ -117,16 +116,17 @@ class Installer implements PluginInterface, EventSubscriberInterface
         if ($operation instanceof UninstallOperation) {
             $package = $operation->getPackage();
             if (in_array($package->getName(), $this->excluded)) {
-                $this->io->write(sprintf("<info>Rikudou installer: Package %s ignored in composer settings</info>", $package->getName()));
+                $this->io->write(sprintf('<info>Rikudou installer: Package %s ignored in composer settings</info>', $package->getName()));
+
                 return;
             }
             $this->projectType = ProjectTypeGetter::get($this->composer);
-            if(is_null($this->projectType)) {
+            if (is_null($this->projectType)) {
                 return;
             }
             $handler = new PackageHandler($package, $this->projectType, $this->composer);
             if ($handler->canBeHandled()) {
-                $this->io->write("<comment>=== [Rikudou Installer] ===</comment>");
+                $this->io->write('<comment>=== [Rikudou Installer] ===</comment>');
                 foreach ($handler->handleUninstall() as $operationResult) {
                     foreach ($operationResult->getMessagesCollection()->getGenerator() as $message) {
                         if ($message->isStatusMessage() || $message->isWarningMessage()) {
@@ -136,7 +136,7 @@ class Installer implements PluginInterface, EventSubscriberInterface
                         }
                     }
                 }
-                $this->io->write("<comment>=== [Rikudou Installer] ===</comment>");
+                $this->io->write('<comment>=== [Rikudou Installer] ===</comment>');
             }
         }
     }
@@ -162,14 +162,15 @@ class Installer implements PluginInterface, EventSubscriberInterface
         $operation = $event->getOperation();
         if ($operation instanceof InstallOperation) {
             $package = $operation->getPackage();
-        } else if ($operation instanceof UpdateOperation) {
+        } elseif ($operation instanceof UpdateOperation) {
             $package = $operation->getTargetPackage();
         } else {
             return;
         }
 
         if (in_array($package->getName(), $this->excluded)) {
-            $this->io->write(sprintf("<info>Rikudou installer: Package %s ignored in composer settings</info>", $package->getName()));
+            $this->io->write(sprintf('<info>Rikudou installer: Package %s ignored in composer settings</info>', $package->getName()));
+
             return;
         }
 
@@ -177,7 +178,7 @@ class Installer implements PluginInterface, EventSubscriberInterface
         if (!$handler->canBeHandled()) {
             return;
         }
-        $this->io->write("<comment>=== [Rikudou Installer] ===</comment>");
+        $this->io->write('<comment>=== [Rikudou Installer] ===</comment>');
         foreach ($handler->handleInstall() as $operationResult) {
             foreach ($operationResult->getMessagesCollection()->getGenerator() as $message) {
                 if ($message->isStatusMessage() || $message->isWarningMessage()) {
@@ -187,7 +188,7 @@ class Installer implements PluginInterface, EventSubscriberInterface
                 }
             }
         }
-        $this->io->write("<comment>=== [Rikudou Installer] ===</comment>");
+        $this->io->write('<comment>=== [Rikudou Installer] ===</comment>');
     }
 
     /**
@@ -203,7 +204,7 @@ class Installer implements PluginInterface, EventSubscriberInterface
 
         /** @var \SplFileInfo $file */
         foreach ($iterator as $file) {
-            if ($file->isFile() && $file->getExtension() === "php") {
+            if ($file->isFile() && $file->getExtension() === 'php') {
                 require_once $file->getRealPath();
             }
         }
@@ -213,14 +214,12 @@ class Installer implements PluginInterface, EventSubscriberInterface
         foreach ($definedClasses as $definedClass) {
             try {
                 $reflection = new \ReflectionClass($definedClass);
-                if($reflection->implementsInterface(PreloadInterface::class)) {
-                    call_user_func([$definedClass, "preload"], $this->composer);
+                if ($reflection->implementsInterface(PreloadInterface::class)) {
+                    call_user_func([$definedClass, 'preload'], $this->composer);
                 }
             } catch (\ReflectionException $e) {
                 continue;
             }
         }
-
     }
-
 }

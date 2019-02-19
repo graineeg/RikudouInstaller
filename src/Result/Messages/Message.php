@@ -1,12 +1,11 @@
 <?php
 
-namespace Rikudou\Installer\Operations\Messages;
+namespace Rikudou\Installer\Result\Messages;
 
 use Rikudou\Installer\Enums\MessageType;
 
 final class Message
 {
-
     /**
      * @var string
      */
@@ -19,9 +18,13 @@ final class Message
 
     public function __construct(string $message, int $messageType)
     {
-
         $this->message = $message;
         $this->messageType = $messageType;
+    }
+
+    public function __toString()
+    {
+        return $this->message;
     }
 
     /**
@@ -34,11 +37,13 @@ final class Message
 
     /**
      * @param string $message
+     *
      * @return Message
      */
     public function setMessage(string $message): Message
     {
         $this->message = $message;
+
         return $this;
     }
 
@@ -71,10 +76,4 @@ final class Message
     {
         return new static($message, MessageType::ERROR);
     }
-
-    public function __toString()
-    {
-        return $this->message;
-    }
-
 }

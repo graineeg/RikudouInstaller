@@ -4,15 +4,13 @@ namespace Rikudou\Installer\Operations;
 
 use Composer\Composer;
 use Composer\Package\PackageInterface;
-use Rikudou\Installer\Helper\ClassInfoParser;
 use Rikudou\Installer\Helper\PreloadInterface;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
+use Rikudou\Installer\Result\OperationResult;
+use Rikudou\ReflectionFile;
 
-abstract class OperationHandlerBase implements PreloadInterface
+abstract class AbstractOperation implements PreloadInterface
 {
-
-    private static $handlers = null;
-
     /**
      * @var ProjectTypeInterface
      */
@@ -32,6 +30,8 @@ abstract class OperationHandlerBase implements PreloadInterface
      * @var string
      */
     protected $packageName;
+
+    private static $handlers = null;
 
     public function __construct(PackageInterface $package, ProjectTypeInterface $projectType, Composer $composer)
     {
@@ -67,7 +67,7 @@ abstract class OperationHandlerBase implements PreloadInterface
     /**
      * @return string[]
      */
-    public static function getHandlers(): array
+    public static function getOperationHandlers(): array
     {
         $handlers = [];
 
@@ -78,12 +78,19 @@ abstract class OperationHandlerBase implements PreloadInterface
 
             /** @var \SplFileInfo $file */
             foreach ($iterator as $file) {
-                if ($file->isFile() && $file->getExtension() === "php") {
-                    $classInfo = new ClassInfoParser($file->getRealPath());
-                    if ($classInfo->isInstanceOf(self::class) && $classInfo->isInstantiable()) {
-                        /** @var self $handler */
-                        $handler = $classInfo->getReflection()->newInstanceWithoutConstructor();
-                        $handlers[$handler->handles()] = $classInfo->getClassName();
+                if ($file->isFile() && $file->getExtension() === 'php') {
+                    try {
+                        $reflectionFile = new ReflectionFile($file->getRealPath());
+                        if ($reflectionFile->containsClass()) {
+                            $reflectionClass = $reflectionFile->getClass();
+                            if ($reflectionClass->isSubclassOf(self::class) && $reflectionClass->isInstantiable()) {
+                                /** @var self $handler */
+                                $handler = $reflectionClass->newInstanceWithoutConstructor();
+                                $handlers[$handler->handles()] = $reflectionClass->getName();
+                            }
+                        }
+                    } catch (\ReflectionException $e) {
+                        // ignore
                     }
                 }
             }
@@ -96,9 +103,8 @@ abstract class OperationHandlerBase implements PreloadInterface
 
     public static function preload(Composer $composer): void
     {
-        if(is_null(self::$handlers)) {
-            self::$handlers = static::getHandlers();
+        if (is_null(self::$handlers)) {
+            self::$handlers = static::getOperationHandlers();
         }
     }
-
 }

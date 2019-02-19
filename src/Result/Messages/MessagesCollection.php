@@ -1,10 +1,9 @@
 <?php
 
-namespace Rikudou\Installer\Operations\Messages;
+namespace Rikudou\Installer\Result\Messages;
 
 final class MessagesCollection
 {
-
     /**
      * @var Message[]
      */
@@ -12,6 +11,7 @@ final class MessagesCollection
 
     /**
      * MessagesCollection constructor.
+     *
      * @param Message ...$messages
      */
     public function __construct(...$messages)
@@ -32,6 +32,7 @@ final class MessagesCollection
     public function addMessage(Message $message): self
     {
         $this->messages[] = $message;
+
         return $this;
     }
 
@@ -45,17 +46,18 @@ final class MessagesCollection
 
     /**
      * @param Message[] $messages
+     *
      * @return MessagesCollection
      */
     public function setMessages(array $messages): MessagesCollection
     {
         foreach ($messages as $message) {
             if (!$message instanceof Message) {
-                throw new \InvalidArgumentException("One of the messages is not instance of " . Message::class);
+                throw new \InvalidArgumentException('One of the messages is not instance of ' . Message::class);
             }
             $this->messages[] = $message;
         }
+
         return $this;
     }
-
 }

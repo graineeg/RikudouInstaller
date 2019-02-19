@@ -3,12 +3,11 @@
 namespace Rikudou\Installer\ProjectType;
 
 use Composer\Composer;
-use Rikudou\Installer\Helper\ClassInfoParser;
 use Rikudou\Installer\Helper\PreloadInterface;
+use Rikudou\ReflectionFile;
 
 class ProjectTypeGetter implements PreloadInterface
 {
-
     private static $classes = null;
 
     /**
@@ -16,17 +15,19 @@ class ProjectTypeGetter implements PreloadInterface
      * Returns null if no project type is detected.
      *
      * @param Composer $composer
+     *
      * @return null|ProjectTypeInterface
      */
     public static function get(Composer $composer): ?ProjectTypeInterface
     {
         $rootDir = dirname($composer->getConfig()->getConfigSource()->getName());
 
-        $classes = static::assignClasses($composer);
+        $classes = static::getClasses($composer);
 
-        $composerProjectType = $composer->getPackage()->getExtra()["rikudou"]["installer"]["project-type"] ?? null;
+        $composerProjectType = $composer->getPackage()->getExtra()['rikudou']['installer']['project-type'] ?? null;
         if ($composerProjectType && isset($classes[$composerProjectType])) {
             $class = $classes[$composerProjectType];
+
             return new $class;
         }
 
@@ -34,12 +35,12 @@ class ProjectTypeGetter implements PreloadInterface
             /** @var ProjectTypeInterface $instance */
             $instance = new $class;
             foreach ($instance->getDirs() as $dir) {
-                if(is_array($dir)) {
+                if (is_array($dir)) {
                     $exists = true;
                     foreach ($dir as $requiredDir) {
                         $exists = $exists && file_exists("{$rootDir}/{$requiredDir}");
                     }
-                    if($exists) {
+                    if ($exists) {
                         return $instance;
                     }
                 } else {
@@ -49,10 +50,18 @@ class ProjectTypeGetter implements PreloadInterface
                 }
             }
         }
+
         return null;
     }
 
-    private static function assignClasses(Composer $composer): array
+    public static function preload(Composer $composer): void
+    {
+        if (is_null(self::$classes)) {
+            self::$classes = self::getClasses($composer);
+        }
+    }
+
+    private static function getClasses(Composer $composer): array
     {
         $classes = [];
 
@@ -78,20 +87,21 @@ class ProjectTypeGetter implements PreloadInterface
                     if (!$file->isFile()) {
                         continue;
                     }
-                    if ($file->getExtension() !== "php") {
+                    if ($file->getExtension() !== 'php') {
                         continue;
                     }
 
-                    $classInfo = new ClassInfoParser($file->getRealPath());
-
-                    if (
-                        !$classInfo->isValidClass() ||
-                        !$classInfo->isInstantiable() ||
-                        !$classInfo->implementsInterface(ProjectTypeInterface::class)
-                    ) {
-                        continue;
+                    try {
+                        $reflectionFile = new ReflectionFile($file->getRealPath());
+                        if ($reflectionFile->containsClass()) {
+                            $reflectionClass = $reflectionFile->getClass();
+                            if ($reflectionClass->isInstantiable() && $reflectionClass->implementsInterface(ProjectTypeInterface::class)) {
+                                $classes[$reflectionClass->newInstance()->getMachineName()] = $reflectionClass->getName();
+                            }
+                        }
+                    } catch (\ReflectionException $e) {
+                        // ignore
                     }
-                    $classes[$classInfo->getReflection()->newInstance()->getMachineName()] = $classInfo->getClassName();
                 }
             }
         } catch (\UnexpectedValueException $exception) {
@@ -99,12 +109,5 @@ class ProjectTypeGetter implements PreloadInterface
         }
 
         return $classes;
-    }
-
-    public static function preload(Composer $composer): void
-    {
-        if(is_null(self::$classes)) {
-            self::$classes = self::assignClasses($composer);
-        }
     }
 }

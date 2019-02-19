@@ -3,10 +3,11 @@
 namespace Rikudou\Installer\Operations;
 
 use Rikudou\Installer\Enums\OperationType;
+use Rikudou\Installer\Helper\AvailableOperationInterface;
+use Rikudou\Installer\Result\OperationResult;
 
-class BundleRegisterHandler extends OperationHandlerBase
+class BundleRegisterOperation extends AbstractOperation implements AvailableOperationInterface
 {
-
     /**
      * Handle installation for given operation
      *
@@ -14,18 +15,16 @@ class BundleRegisterHandler extends OperationHandlerBase
      */
     public function install(): OperationResult
     {
-        $exists = false;
         $result = new OperationResult();
 
         $sourcePath = "{$this->packageInstallDir}/.installer/%s/bundles.php";
         foreach ($this->projectType->getProjectDirs() as $projectDir) {
             $bundleFile = sprintf($sourcePath, $projectDir);
             if (is_file($bundleFile)) {
-                $exists = true;
-
                 $data = require $bundleFile;
                 if (!is_array($data)) {
-                    $result->addErrorMessage("<error>The bundles.php file in installer must return an array</error>");
+                    $result->addErrorMessage('<error>The bundles.php file in installer must return an array</error>');
+                    break;
                 }
 
                 $installedBundlesFile = "{$this->projectRootDir}/config/bundles.php";
@@ -43,7 +42,7 @@ class BundleRegisterHandler extends OperationHandlerBase
             }
         }
 
-        if (!$result->isFailure() && $exists) {
+        if (!$result->isFailure()) {
             $result->addStatusMessage("Successfully copied Bundle information from {$this->packageName}");
         }
 
@@ -63,11 +62,10 @@ class BundleRegisterHandler extends OperationHandlerBase
         foreach ($this->projectType->getProjectDirs() as $projectDir) {
             $bundleFile = sprintf($sourcePath, $projectDir);
             if (is_file($bundleFile)) {
-                $exists = true;
-
                 $data = require $bundleFile;
                 if (!is_array($data)) {
-                    $result->addErrorMessage("<error>The bundles.php file in installer must return an array</error>");
+                    $result->addErrorMessage('<error>The bundles.php file in installer must return an array</error>');
+                    break;
                 }
 
                 $installedBundlesFile = "{$this->projectRootDir}/config/bundles.php";
@@ -83,7 +81,7 @@ class BundleRegisterHandler extends OperationHandlerBase
             }
         }
 
-        if (!$result->isFailure() && $exists) {
+        if (!$result->isFailure()) {
             $result->addStatusMessage("Successfully uninstalled Bundle information from {$this->packageName}");
         }
 
@@ -101,11 +99,33 @@ class BundleRegisterHandler extends OperationHandlerBase
         return OperationType::REGISTER_SYMFONY_BUNDLE;
     }
 
+    /**
+     * Returns true if the operation is available for the current config, e.g. required files exist
+     * in the .installer directory
+     *
+     * @return bool
+     */
+    public function isAvailable(): bool
+    {
+        if (!file_exists("{$this->projectRootDir}/config/bundles.php")) {
+            return false;
+        }
+        $sourcePath = "{$this->packageInstallDir}/.installer/%s/bundles.php";
+        foreach ($this->projectType->getProjectDirs() as $projectDir) {
+            $bundleFile = sprintf($sourcePath, $projectDir);
+            if (is_file($bundleFile)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function dumpConfig(array $bundles, array $ignoredClasses = []): string
     {
         $content = "<?php\n\nreturn [\n";
         foreach ($bundles as $class => $envs) {
-            if(in_array($class, $ignoredClasses)) {
+            if (in_array($class, $ignoredClasses)) {
                 continue;
             }
             $content .= "    {$class}::class => [";

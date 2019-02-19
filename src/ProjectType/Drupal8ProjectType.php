@@ -6,7 +6,6 @@ use Rikudou\Installer\Enums\OperationType;
 
 class Drupal8ProjectType implements ProjectTypeInterface
 {
-
     /**
      * Returns the project friendly name for console output
      *
@@ -14,7 +13,7 @@ class Drupal8ProjectType implements ProjectTypeInterface
      */
     public function getFriendlyName(): string
     {
-        return "Drupal 8";
+        return 'Drupal 8';
     }
 
     /**
@@ -24,7 +23,7 @@ class Drupal8ProjectType implements ProjectTypeInterface
      */
     public function getMachineName(): string
     {
-        return "drupal-8";
+        return 'drupal-8';
     }
 
     /**
@@ -36,7 +35,7 @@ class Drupal8ProjectType implements ProjectTypeInterface
     public function getDirs(): array
     {
         return [
-            "core/lib/Drupal"
+            'core/lib/Drupal',
         ];
     }
 
@@ -44,13 +43,14 @@ class Drupal8ProjectType implements ProjectTypeInterface
      * Returns supported types of operations for current project
      *
      * @see \Rikudou\Installer\Enums\OperationType
+     *
      * @return array
      */
     public function getTypes(): array
     {
         return [
             OperationType::COPY_FILES,
-            OperationType::ENV_FILES
+            OperationType::ENVIRONMENT_VARIABLES,
         ];
     }
 
@@ -63,8 +63,8 @@ class Drupal8ProjectType implements ProjectTypeInterface
     public function getProjectDirs(): array
     {
         return [
-            "drupal",
-            "drupal8"
+            'drupal',
+            'drupal8',
         ];
     }
 }

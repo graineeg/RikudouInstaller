@@ -4,9 +4,9 @@ namespace Rikudou\Installer\Enums;
 
 class OperationType
 {
+    public const COPY_FILES = 'copyFiles';
 
-    const COPY_FILES = "copy";
-    const ENV_FILES = "env";
-    const REGISTER_SYMFONY_BUNDLE = "symfonyBundleRegister";
+    public const ENVIRONMENT_VARIABLES = 'environmentVariables';
 
+    public const REGISTER_SYMFONY_BUNDLE = 'symfonyBundleRegister';
 }
