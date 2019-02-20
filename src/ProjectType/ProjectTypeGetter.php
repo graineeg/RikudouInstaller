@@ -95,6 +95,7 @@ class ProjectTypeGetter implements PreloadInterface
                         assert(is_string($file->getRealPath()));
                         $reflectionFile = new ReflectionFile($file->getRealPath());
                         if ($reflectionFile->containsClass()) {
+                            require_once $file->getRealPath();
                             $reflectionClass = $reflectionFile->getClass();
                             if ($reflectionClass->isInstantiable() && $reflectionClass->implementsInterface(ProjectTypeInterface::class)) {
                                 $instance = $reflectionClass->newInstance();

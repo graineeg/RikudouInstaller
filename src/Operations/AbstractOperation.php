@@ -100,6 +100,7 @@ abstract class AbstractOperation implements PreloadInterface
                             }
                             $reflectionFile = new ReflectionFile($filePath);
                             if ($reflectionFile->containsClass()) {
+                                require_once $filePath;
                                 $reflectionClass = $reflectionFile->getClass();
                                 if ($reflectionClass->isSubclassOf(self::class) && $reflectionClass->isInstantiable()) {
                                     /** @var self $handler */
