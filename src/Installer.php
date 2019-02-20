@@ -215,7 +215,9 @@ class Installer implements PluginInterface, EventSubscriberInterface
             try {
                 $reflection = new \ReflectionClass($definedClass);
                 if ($reflection->implementsInterface(PreloadInterface::class)) {
-                    call_user_func([$definedClass, 'preload'], $this->composer);
+                    $callback = [$definedClass, 'preload'];
+                    assert(is_callable($callback));
+                    call_user_func($callback, $this->composer);
                 }
             } catch (\ReflectionException $e) {
                 continue;

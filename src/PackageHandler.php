@@ -52,7 +52,7 @@ class PackageHandler
     {
         $result = [];
 
-        $handlers = AbstractOperation::getOperationHandlers();
+        $handlers = AbstractOperation::getOperationHandlers($this->composer);
 
         foreach ($this->projectType->getTypes() as $type) {
             if (isset($handlers[$type])) {
@@ -80,7 +80,7 @@ class PackageHandler
     {
         $result = [];
 
-        $handlers = AbstractOperation::getOperationHandlers();
+        $handlers = AbstractOperation::getOperationHandlers($this->composer);
 
         foreach ($this->projectType->getTypes() as $type) {
             if (isset($handlers[$type])) {

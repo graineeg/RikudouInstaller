@@ -92,11 +92,14 @@ class ProjectTypeGetter implements PreloadInterface
                     }
 
                     try {
+                        assert(is_string($file->getRealPath()));
                         $reflectionFile = new ReflectionFile($file->getRealPath());
                         if ($reflectionFile->containsClass()) {
                             $reflectionClass = $reflectionFile->getClass();
                             if ($reflectionClass->isInstantiable() && $reflectionClass->implementsInterface(ProjectTypeInterface::class)) {
-                                $classes[$reflectionClass->newInstance()->getMachineName()] = $reflectionClass->getName();
+                                $instance = $reflectionClass->newInstance();
+                                assert($instance instanceof ProjectTypeInterface);
+                                $classes[$instance->getMachineName()] = $reflectionClass->getName();
                             }
                         }
                     } catch (\ReflectionException $e) {

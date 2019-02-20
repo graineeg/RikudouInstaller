@@ -21,7 +21,7 @@ class CopyFilesOperation extends AbstractOperation implements AvailableOperation
         $sourcePath = "{$this->packageInstallDir}/.installer/%s/files";
         foreach ($this->projectType->getProjectDirs() as $projectDir) {
             if (is_dir(sprintf($sourcePath, $projectDir))) {
-                /** @var \RecursiveIteratorIterator|\RecursiveDirectoryIterator $iterator */
+                /** @var \RecursiveDirectoryIterator $iterator */
                 $iterator = new \RecursiveIteratorIterator(
                     new \RecursiveDirectoryIterator(
                         sprintf($sourcePath, $projectDir),
@@ -40,6 +40,7 @@ class CopyFilesOperation extends AbstractOperation implements AvailableOperation
                             }
                         }
                     } elseif (!file_exists($target)) {
+                        assert(is_string($file->getRealPath()));
                         if (!copy($file->getRealPath(), $target)) {
                             $result->addErrorMessage("<error>Could not copy file to '${target}'</error>");
                         }
@@ -71,7 +72,7 @@ class CopyFilesOperation extends AbstractOperation implements AvailableOperation
         foreach ($this->projectType->getProjectDirs() as $projectDir) {
             $directory = sprintf($sourcePath, $projectDir);
             if (is_dir($directory)) {
-                /** @var \RecursiveIteratorIterator|\RecursiveDirectoryIterator $iteratorPackage */
+                /** @var \RecursiveDirectoryIterator $iteratorPackage */
                 $iteratorPackage = new \RecursiveIteratorIterator(
                     new \RecursiveDirectoryIterator(
                         $directory,
@@ -89,6 +90,7 @@ class CopyFilesOperation extends AbstractOperation implements AvailableOperation
                     if ($file->isDir()) {
                         @rmdir($target);
                     } else {
+                        assert(is_string($file->getRealPath()));
                         $hashTarget = hash_file('sha1', $target);
                         $hashSource = hash_file('sha1', $file->getRealPath());
                         if ($hashSource === $hashTarget) {

@@ -75,6 +75,7 @@ class EnvironmentVariablesOperation extends AbstractOperation implements Availab
             $file = "{$this->projectRootDir}/{$file}";
             if (file_exists($file)) {
                 $envContent = file_get_contents($file);
+                assert(is_string($envContent));
 
                 $startString = "\n###BEGIN-Rikudou-Installer-{$this->packageName}###";
                 $endString = "###END-Rikudou-Installer-{$this->packageName}###";
