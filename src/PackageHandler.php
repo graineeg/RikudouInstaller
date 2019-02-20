@@ -5,6 +5,7 @@ namespace Rikudou\Installer;
 use Composer\Composer;
 use Composer\Package\PackageInterface;
 use Rikudou\Installer\Helper\AvailableOperationInterface;
+use Rikudou\Installer\Helper\SupportedProjectTypesInterface;
 use Rikudou\Installer\Operations\AbstractOperation;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 use Rikudou\Installer\Result\OperationResult;
@@ -53,19 +54,33 @@ class PackageHandler
         $result = [];
 
         $handlers = AbstractOperation::getOperationHandlers($this->composer);
+        $handlersMap = [];
+
+        foreach ($handlers as $handler) {
+            $handler = new $handler($this->package, $this->projectType, $this->composer);
+            if ($handler instanceof SupportedProjectTypesInterface) {
+                if (in_array($this->projectType->getMachineName(), $handler->getSupportedProjectTypes())) {
+                    $handlersMap[] = $handler;
+                }
+            }
+        }
 
         foreach ($this->projectType->getTypes() as $type) {
             if (isset($handlers[$type])) {
                 $class = $handlers[$type];
                 /** @var AbstractOperation $handler */
                 $handler = new $class($this->package, $this->projectType, $this->composer);
-                if ($handler instanceof AvailableOperationInterface) {
-                    if (!$handler->isAvailable()) {
-                        continue;
-                    }
-                }
-                $result[] = $handler->install();
+                $handlersMap[] = $handler;
             }
+        }
+
+        foreach ($handlersMap as $handler) {
+            if ($handler instanceof AvailableOperationInterface) {
+                if (!$handler->isAvailable()) {
+                    continue;
+                }
+            }
+            $result[] = $handler->install();
         }
 
         return $result;
