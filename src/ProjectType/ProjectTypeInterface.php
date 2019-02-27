@@ -22,7 +22,7 @@ interface ProjectTypeInterface
      * Returns list of directories the project should contain. If any directory is found, this class
      * is assumed as a valid type
      *
-     * @return array
+     * @return string[]
      */
     public function getDirs(): array;
 
@@ -31,7 +31,7 @@ interface ProjectTypeInterface
      *
      * @see \Rikudou\Installer\Enums\OperationType
      *
-     * @return array
+     * @return string[]
      */
     public function getTypes(): array;
 
@@ -39,7 +39,7 @@ interface ProjectTypeInterface
      * Returns the directory from which the configuration will be handled.
      * These must be the direct subdirectories of .installer
      *
-     * @return array
+     * @return string[]
      */
     public function getProjectDirs(): array;
 }
