@@ -65,9 +65,9 @@ class Installer implements PluginInterface, EventSubscriberInterface
     {
         return [
             PackageEvents::POST_PACKAGE_INSTALL => ['handleInstall', 1],
-            PackageEvents::POST_PACKAGE_UPDATE => ['handleInstall', 1],
+//            PackageEvents::POST_PACKAGE_UPDATE => ['handleInstall', 1],
             ScriptEvents::PRE_INSTALL_CMD => ['printInfo', 1],
-            ScriptEvents::PRE_UPDATE_CMD => ['printInfo', 1],
+//            ScriptEvents::PRE_UPDATE_CMD => ['printInfo', 1],
             PackageEvents::PRE_PACKAGE_UNINSTALL => ['handleUninstall', 1],
         ];
     }
