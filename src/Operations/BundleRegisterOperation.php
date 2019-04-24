@@ -9,40 +9,40 @@ use Rikudou\Installer\Result\OperationResult;
 class BundleRegisterOperation extends AbstractOperation implements AvailableOperationInterface
 {
     /**
-     * Handle installation for given operation
+     * @param string $path The path to the installation directory
      *
      * @return OperationResult
      */
-    public function install(): OperationResult
+    public function install(string $path): OperationResult
     {
         $result = new OperationResult();
 
-        $sourcePath = "{$this->packageInstallDir}/.installer/%s/bundles.php";
-        foreach ($this->projectType->getProjectDirs() as $projectDir) {
-            $bundleFile = sprintf($sourcePath, $projectDir);
-            if (is_file($bundleFile)) {
-                $data = require $bundleFile;
-                if (!is_array($data)) {
-                    $result->addErrorMessage('<error>The bundles.php file in installer must return an array</error>');
-                    break;
-                }
+        $bundleFile = "{$path}/bundles.php";
+        if (is_file($bundleFile)) {
+            $data = require $bundleFile;
+            if (!is_array($data)) {
+                $result->addErrorMessage('<error>The bundles.php file in installer must return an array</error>');
 
-                $installedBundlesFile = "{$this->projectRootDir}/config/bundles.php";
-                if (file_exists($installedBundlesFile)) {
-                    $installedBundles = require $installedBundlesFile;
-                    if (is_array($installedBundles)) {
-                        $resultingBundleData = array_merge($installedBundles, $data);
+                return $result;
+            }
 
-                        $export = $this->dumpConfig($resultingBundleData);
-                        if (!file_put_contents($installedBundlesFile, $export, LOCK_EX)) {
-                            $result->addErrorMessage("<error>Could not copy bundle content from {$this->packageName}</error>");
-                        }
+            $installedBundlesFile = "{$this->projectRootDir}/config/bundles.php";
+            if (file_exists($installedBundlesFile)) {
+                $installedBundles = require $installedBundlesFile;
+                if (is_array($installedBundles)) {
+                    $resultingBundleData = array_merge($installedBundles, $data);
+
+                    $export = $this->dumpConfig($resultingBundleData);
+                    if (!file_put_contents($installedBundlesFile, $export, LOCK_EX)) {
+                        $result->addErrorMessage("<error>Could not copy bundle content from {$this->packageName}</error>");
+
+                        return $result;
                     }
                 }
             }
-        }
-
-        if (!$result->isFailure()) {
+            $result->setExtraConfig([
+                'success' => true,
+            ]);
             $result->addStatusMessage("Successfully copied Bundle information from {$this->packageName}");
         }
 
@@ -52,38 +52,42 @@ class BundleRegisterOperation extends AbstractOperation implements AvailableOper
     /**
      * Handle uninstallation for given operation
      *
+     * @param string $path
+     * @param array  $packageConfig
+     *
      * @return OperationResult
      */
-    public function uninstall(): OperationResult
+    public function uninstall(string $path, array $packageConfig): OperationResult
     {
         $result = new OperationResult();
+        if (!($packageConfig['success'] ?? false)) {
+            return $result;
+        }
 
-        $sourcePath = "{$this->packageInstallDir}/.installer/%s/bundles.php";
-        foreach ($this->projectType->getProjectDirs() as $projectDir) {
-            $bundleFile = sprintf($sourcePath, $projectDir);
-            if (is_file($bundleFile)) {
-                $data = require $bundleFile;
-                if (!is_array($data)) {
-                    $result->addErrorMessage('<error>The bundles.php file in installer must return an array</error>');
-                    break;
-                }
+        $bundleFile = "{$path}/bundles.php";
+        if (is_file($bundleFile)) {
+            $data = require $bundleFile;
+            if (!is_array($data)) {
+                $result->addErrorMessage('<error>The bundles.php file in installer must return an array</error>');
 
-                $installedBundlesFile = "{$this->projectRootDir}/config/bundles.php";
-                if (file_exists($installedBundlesFile)) {
-                    $installedBundles = require $installedBundlesFile;
-                    if (is_array($installedBundles)) {
-                        $export = $this->dumpConfig($installedBundles, array_keys($data));
-                        if (!file_put_contents($installedBundlesFile, $export, LOCK_EX)) {
-                            $result->addErrorMessage("<error>Could not remove bundle content from {$this->packageName}</error>");
-                        }
+                return $result;
+            }
+
+            $installedBundlesFile = "{$this->projectRootDir}/config/bundles.php";
+            if (file_exists($installedBundlesFile)) {
+                $installedBundles = require $installedBundlesFile;
+                if (is_array($installedBundles)) {
+                    $export = $this->dumpConfig($installedBundles, array_keys($data));
+                    if (!file_put_contents($installedBundlesFile, $export, LOCK_EX)) {
+                        $result->addErrorMessage("<error>Could not remove bundle content from {$this->packageName}</error>");
+
+                        return $result;
                     }
                 }
             }
         }
 
-        if (!$result->isFailure()) {
-            $result->addStatusMessage("Successfully uninstalled Bundle information from {$this->packageName}");
-        }
+        $result->addStatusMessage("Successfully uninstalled Bundle information from {$this->packageName}");
 
         return $result;
     }
@@ -103,22 +107,32 @@ class BundleRegisterOperation extends AbstractOperation implements AvailableOper
      * Returns true if the operation is available for the current config, e.g. required files exist
      * in the .installer directory
      *
+     * @param array $paths
+     *
      * @return bool
      */
-    public function isAvailable(): bool
+    public function isAvailable(array $paths): bool
     {
         if (!file_exists("{$this->projectRootDir}/config/bundles.php")) {
             return false;
         }
-        $sourcePath = "{$this->packageInstallDir}/.installer/%s/bundles.php";
-        foreach ($this->projectType->getProjectDirs() as $projectDir) {
-            $bundleFile = sprintf($sourcePath, $projectDir);
-            if (is_file($bundleFile)) {
+        foreach ($paths as $path) {
+            if (is_file("{$path}/bundles.php")) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Returns the user friendly name that will be printed to console
+     *
+     * @return string
+     */
+    public function getFriendlyName(): string
+    {
+        return 'Register Bundle';
     }
 
     private function dumpConfig(array $bundles, array $ignoredClasses = []): string

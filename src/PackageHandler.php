@@ -4,11 +4,14 @@ namespace Rikudou\Installer;
 
 use Composer\Composer;
 use Composer\Package\PackageInterface;
+use Rikudou\Installer\Configuration\Config;
+use Rikudou\Installer\Configuration\VersionDirectory;
 use Rikudou\Installer\Helper\AvailableOperationInterface;
 use Rikudou\Installer\Helper\SupportedProjectTypesInterface;
 use Rikudou\Installer\Operations\AbstractOperation;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 use Rikudou\Installer\Result\OperationResult;
+use Rikudou\Installer\Result\OperationResultCollection;
 
 class PackageHandler
 {
@@ -27,11 +30,29 @@ class PackageHandler
      */
     private $composer;
 
-    public function __construct(PackageInterface $package, ProjectTypeInterface $projectType, Composer $composer)
-    {
+    /**
+     * @var Config
+     */
+    private $config;
+
+    /**
+     * PackageHandler constructor.
+     *
+     * @param PackageInterface     $package
+     * @param ProjectTypeInterface $projectType
+     * @param Composer             $composer
+     * @param Config               $config
+     */
+    public function __construct(
+        PackageInterface $package,
+        ProjectTypeInterface $projectType,
+        Composer $composer,
+        Config $config
+    ) {
         $this->package = $package;
         $this->projectType = $projectType;
         $this->composer = $composer;
+        $this->config = $config;
     }
 
     /**
@@ -39,7 +60,7 @@ class PackageHandler
      *
      * @return bool
      */
-    public function canBeHandled(): bool
+    public function containsInstallerDirectory(): bool
     {
         return is_dir("{$this->composer->getInstallationManager()->getInstallPath($this->package)}/.installer");
     }
@@ -47,11 +68,11 @@ class PackageHandler
     /**
      * Checks for supported project type operations and returns array of OperationResult instances
      *
-     * @return OperationResult[]
+     * @return OperationResultCollection
      */
-    public function handleInstall(): array
+    public function handleInstall(): iterable
     {
-        $result = [];
+        $results = new OperationResultCollection();
 
         $handlers = AbstractOperation::getOperationHandlers($this->composer);
         $handlersMap = [];
@@ -74,43 +95,117 @@ class PackageHandler
             }
         }
 
+        $versions = $this->getVersions();
         foreach ($handlersMap as $handler) {
             if ($handler instanceof AvailableOperationInterface) {
-                if (!$handler->isAvailable()) {
+                if (!$handler->isAvailable($this->getPaths())) {
                     continue;
                 }
             }
-            $result[] = $handler->install();
+
+            foreach ($versions as $version) {
+                $result = $handler->install($version->getPath());
+                if (!$result->isNeutral()) {
+                    $this->config->addConfig($this->package, [
+                        'operations' => [
+                            $version->getVersion() => [
+                                $handler->handles() => [],
+                            ],
+                        ],
+                    ]);
+                    if ($extraConfig = $result->getExtraConfig()) {
+                        $this->config->addConfig($this->package, [
+                            'operations' => [
+                                $version->getVersion() => [
+                                    $handler->handles() => $extraConfig,
+                                ],
+                            ],
+                        ]);
+                    }
+                    $result->setVersion('v' . $version->getVersion());
+                    $result->setOperationName($handler->getFriendlyName());
+                    $results[] = $result;
+                }
+            }
         }
 
-        return $result;
+        if (isset($version)) {
+            $this->config->addConfig($this->package, [
+                'version' => $version->getVersion(),
+            ]);
+        }
+
+        return $results;
     }
 
     /**
      * Checks for supported project type operations and returns array of OperationResult instances
      *
-     * @return OperationResult[]
+     * @return OperationResultCollection
      */
-    public function handleUninstall(): array
+    public function handleUninstall(): iterable
     {
-        $result = [];
+        $results = new OperationResultCollection();
 
         $handlers = AbstractOperation::getOperationHandlers($this->composer);
 
+        $paths = $this->getPaths(true);
         foreach ($this->projectType->getTypes() as $type) {
             if (isset($handlers[$type])) {
                 $class = $handlers[$type];
                 /** @var AbstractOperation $handler */
                 $handler = new $class($this->package, $this->projectType, $this->composer);
                 if ($handler instanceof AvailableOperationInterface) {
-                    if (!$handler->isAvailable()) {
+                    if (!$handler->isAvailable($paths)) {
                         continue;
                     }
                 }
-                $result[] = $handler->uninstall();
+                $versions = $this->getVersions(true);
+                foreach ($versions as $version) {
+                    $config = $this->config->getConfig($this->package)['operations'][$version->getVersion()][$handler->handles()] ?? [];
+                    $result = $handler->uninstall($version->getPath(), $config);
+                    if (!$result->isNeutral()) {
+                        $result->setVersion('v' . $version->getVersion());
+                        $result->setOperationName($handler->getFriendlyName());
+                        $results[] = $result;
+                    }
+                }
             }
         }
 
-        return $result;
+        $this->config->removeConfig($this->package);
+
+        return $results;
+    }
+
+    /**
+     * @param bool $all
+     *
+     * @return string[]
+     */
+    private function getPaths(bool $all = false): array
+    {
+        $installableVersions = $this->getVersions($all);
+        $paths = array_map(function ($item) {
+            assert($item instanceof VersionDirectory);
+
+            return $item->getPath();
+        }, $installableVersions);
+
+        return $paths;
+    }
+
+    /**
+     * @param bool $all
+     *
+     * @return VersionDirectory[]
+     */
+    private function getVersions(bool $all = false): array
+    {
+        if ($all) {
+            return $this->config->getPackageVersions($this->package, $this->projectType);
+        } else {
+            return $this->config->getInstallableVersions($this->package, $this->projectType);
+        }
     }
 }

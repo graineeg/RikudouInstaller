@@ -4,10 +4,15 @@ namespace Rikudou\Installer\Operations;
 
 use Composer\Composer;
 use Composer\Package\PackageInterface;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use ReflectionException;
 use Rikudou\Installer\Helper\PreloadInterface;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 use Rikudou\Installer\Result\OperationResult;
 use Rikudou\ReflectionFile;
+use SplFileInfo;
+use UnexpectedValueException;
 
 abstract class AbstractOperation implements PreloadInterface
 {
@@ -45,16 +50,21 @@ abstract class AbstractOperation implements PreloadInterface
     /**
      * Handle installation for given operation
      *
+     * @param string $path The path to the installation directory
+     *
      * @return OperationResult
      */
-    abstract public function install(): OperationResult;
+    abstract public function install(string $path): OperationResult;
 
     /**
      * Handle uninstallation for given operation
      *
+     * @param string $path          The path to the installation directory
+     * @param array  $packageConfig The extra config from lock file
+     *
      * @return OperationResult
      */
-    abstract public function uninstall(): OperationResult;
+    abstract public function uninstall(string $path, array $packageConfig): OperationResult;
 
     /**
      * Returns the type of operation this class can handle.
@@ -63,6 +73,13 @@ abstract class AbstractOperation implements PreloadInterface
      * @return string
      */
     abstract public function handles(): string;
+
+    /**
+     * Returns the user friendly name that will be printed to console
+     *
+     * @return string
+     */
+    abstract public function getFriendlyName(): string;
 
     /**
      * @param Composer $composer
@@ -86,11 +103,11 @@ abstract class AbstractOperation implements PreloadInterface
 
         try {
             foreach ($directories as $directory) {
-                $iterator = new \RecursiveIteratorIterator(
-                    new \RecursiveDirectoryIterator($directory)
+                $iterator = new RecursiveIteratorIterator(
+                    new RecursiveDirectoryIterator($directory)
                 );
 
-                /** @var \SplFileInfo $file */
+                /** @var SplFileInfo $file */
                 foreach ($iterator as $file) {
                     if ($file->isFile() && $file->getExtension() === 'php') {
                         try {
@@ -108,13 +125,13 @@ abstract class AbstractOperation implements PreloadInterface
                                     $handlers[$handler->handles()] = $reflectionClass->getName();
                                 }
                             }
-                        } catch (\ReflectionException $e) {
+                        } catch (ReflectionException $e) {
                             // ignore
                         }
                     }
                 }
             }
-        } catch (\UnexpectedValueException $exception) {
+        } catch (UnexpectedValueException $exception) {
             $handlers = self::$handlers;
         }
 

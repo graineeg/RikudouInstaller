@@ -1,8 +1,9 @@
 <?php
 
-namespace Rikudou\Installer\ProjectType;
+namespace Rikudou\Installer\ProjectType\Type;
 
 use Rikudou\Installer\Enums\OperationType;
+use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 
 class Drupal8ProjectType implements ProjectTypeInterface
 {
@@ -32,7 +33,7 @@ class Drupal8ProjectType implements ProjectTypeInterface
      *
      * @return array
      */
-    public function getDirs(): array
+    public function getMatchableFiles(): array
     {
         return [
             'core/lib/Drupal',

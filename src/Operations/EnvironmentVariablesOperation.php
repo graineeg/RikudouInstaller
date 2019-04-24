@@ -24,35 +24,44 @@ class EnvironmentVariablesOperation extends AbstractOperation implements Availab
      *  - .env
      * If any of the file exists, the env content is written into it
      *
+     * @param string $path List of directories that contain operation relevant files
+     *
      * @return OperationResult
      */
-    public function install(): OperationResult
+    public function install(string $path): OperationResult
     {
         $result = new OperationResult();
 
-        $sourceFile = "{$this->packageInstallDir}/.installer/%s/.env";
-        foreach ($this->projectType->getProjectDirs() as $projectDir) {
-            $envFile = sprintf($sourceFile, $projectDir);
-            if (is_file($envFile)) {
-                $content = "\n";
-                $content .= "###BEGIN-Rikudou-Installer-{$this->packageName}###\n";
-                $content .= "# Do not remove the above line if you want the installer to be able to delete the content on uninstall\n";
-                $content .= file_get_contents($envFile) . "\n";
-                $content .= "###END-Rikudou-Installer-{$this->packageName}###";
+        $hash = uniqid('', true);
+        $envFile = "{$path}/.env";
+        if (is_file($envFile)) {
+            $content = "\n";
+            $content .= "###BEGIN-Rikudou-Installer-{$this->packageName}-{$hash}###\n";
+            $content .= "# Do not remove the above line if you want the installer to be able to delete the content on uninstall\n";
+            $content .= file_get_contents($envFile) . "\n";
+            $content .= "###END-Rikudou-Installer-{$this->packageName}-{$hash}###";
 
-                foreach (self::ENV_FILES as $file) {
-                    $targetEnvFile = "{$this->projectRootDir}/${file}";
-                    if (file_exists($targetEnvFile)) {
-                        if (!file_put_contents($targetEnvFile, $content, FILE_APPEND | LOCK_EX)) {
-                            $result->addErrorMessage("<error>Could not copy env variables from {$this->packageName}</error>");
-                        }
+            $extraConfig = [
+                'hash' => $hash,
+                'files' => [],
+            ];
+
+            foreach (self::ENV_FILES as $file) {
+                $targetEnvFile = "{$this->projectRootDir}/${file}";
+                if (file_exists($targetEnvFile)) {
+                    if (file_put_contents($targetEnvFile, $content, FILE_APPEND | LOCK_EX) === false) {
+                        $result->addErrorMessage("<error>Could not copy env variables from {$this->packageName}</error>");
+                    } else {
+                        $extraConfig['files'][] = $file;
                     }
                 }
             }
-        }
 
-        if (!$result->isFailure()) {
-            $result->addStatusMessage("Successfully copied env variables from {$this->packageName}");
+            $result->setExtraConfig($extraConfig);
+
+            if (!$result->isFailure()) {
+                $result->addStatusMessage("Successfully copied env variables from {$this->packageName}");
+            }
         }
 
         return $result;
@@ -65,20 +74,25 @@ class EnvironmentVariablesOperation extends AbstractOperation implements Availab
      *  - .env.dist
      *  - .env
      *
+     * @param string $path
+     * @param array  $packageConfig
+     *
      * @return OperationResult
      */
-    public function uninstall(): OperationResult
+    public function uninstall(string $path, array $packageConfig): OperationResult
     {
         $result = new OperationResult();
 
-        foreach (self::ENV_FILES as $file) {
+        $hash = $packageConfig['hash'] ?? '';
+        $files = $packageConfig['files'] ?? [];
+        foreach ($files as $file) {
             $file = "{$this->projectRootDir}/{$file}";
             if (file_exists($file)) {
                 $envContent = file_get_contents($file);
                 assert(is_string($envContent));
 
-                $startString = "\n###BEGIN-Rikudou-Installer-{$this->packageName}###";
-                $endString = "###END-Rikudou-Installer-{$this->packageName}###";
+                $startString = "\n###BEGIN-Rikudou-Installer-{$this->packageName}-{$hash}###";
+                $endString = "###END-Rikudou-Installer-{$this->packageName}-{$hash}###";
 
                 $startPos = strpos($envContent, $startString);
                 if ($startPos === false) {
@@ -97,7 +111,7 @@ class EnvironmentVariablesOperation extends AbstractOperation implements Availab
             }
         }
 
-        if ($result->isSuccess()) {
+        if (!$result->isFailure()) {
             $result->addStatusMessage("Successfully uninstalled env variables from {$this->packageName}");
         }
 
@@ -118,9 +132,11 @@ class EnvironmentVariablesOperation extends AbstractOperation implements Availab
      * Returns true if the operation is available for the current config, e.g. required files exist
      * in the .installer directory
      *
+     * @param array $paths
+     *
      * @return bool
      */
-    public function isAvailable(): bool
+    public function isAvailable(array $paths): bool
     {
         $projectEnvFileExists = false;
         foreach (self::ENV_FILES as $envFile) {
@@ -133,14 +149,23 @@ class EnvironmentVariablesOperation extends AbstractOperation implements Availab
             return false;
         }
 
-        $sourceFile = "{$this->packageInstallDir}/.installer/%s/.env";
-        foreach ($this->projectType->getProjectDirs() as $projectDir) {
-            $envFile = sprintf($sourceFile, $projectDir);
+        foreach ($paths as $projectDir) {
+            $envFile = "{$projectDir}/.env";
             if (is_file($envFile)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Returns the user friendly name that will be printed to console
+     *
+     * @return string
+     */
+    public function getFriendlyName(): string
+    {
+        return 'Copy Environment Variables';
     }
 }

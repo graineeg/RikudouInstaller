@@ -3,10 +3,15 @@
 namespace Rikudou\Installer\ProjectType;
 
 use Composer\Composer;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use ReflectionException;
 use Rikudou\Installer\Helper\PreloadInterface;
 use Rikudou\ReflectionFile;
+use SplFileInfo;
+use UnexpectedValueException;
 
-class ProjectTypeGetter implements PreloadInterface
+class ProjectTypeMatcher implements PreloadInterface
 {
     private static $classes = null;
 
@@ -18,14 +23,14 @@ class ProjectTypeGetter implements PreloadInterface
      *
      * @return null|ProjectTypeInterface
      */
-    public static function get(Composer $composer): ?ProjectTypeInterface
+    public static function findProjectType(Composer $composer): ?ProjectTypeInterface
     {
         $rootDir = dirname($composer->getConfig()->getConfigSource()->getName());
 
-        $classes = static::getClasses($composer);
+        $classes = static::getProjectTypeClasses($composer);
 
         $composerProjectType = $composer->getPackage()->getExtra()['rikudou']['installer']['project-type'] ?? null;
-        if ($composerProjectType && isset($classes[$composerProjectType])) {
+        if (!is_null($composerProjectType) && isset($classes[$composerProjectType])) {
             $class = $classes[$composerProjectType];
 
             return new $class;
@@ -34,7 +39,7 @@ class ProjectTypeGetter implements PreloadInterface
         foreach ($classes as $class) {
             /** @var ProjectTypeInterface $instance */
             $instance = new $class;
-            foreach ($instance->getDirs() as $dir) {
+            foreach ($instance->getMatchableFiles() as $dir) {
                 if (is_array($dir)) {
                     $exists = true;
                     foreach ($dir as $requiredDir) {
@@ -57,11 +62,11 @@ class ProjectTypeGetter implements PreloadInterface
     public static function preload(Composer $composer): void
     {
         if (is_null(self::$classes)) {
-            self::$classes = self::getClasses($composer);
+            self::$classes = self::getProjectTypeClasses($composer);
         }
     }
 
-    private static function getClasses(Composer $composer): array
+    private static function getProjectTypeClasses(Composer $composer): array
     {
         $classes = [];
 
@@ -78,11 +83,11 @@ class ProjectTypeGetter implements PreloadInterface
 
         try {
             foreach ($directories as $directory) {
-                $iterator = new \RecursiveIteratorIterator(
-                    new \RecursiveDirectoryIterator($directory)
+                $iterator = new RecursiveIteratorIterator(
+                    new RecursiveDirectoryIterator($directory)
                 );
 
-                /** @var \SplFileInfo $file */
+                /** @var SplFileInfo $file */
                 foreach ($iterator as $file) {
                     if (!$file->isFile()) {
                         continue;
@@ -103,12 +108,12 @@ class ProjectTypeGetter implements PreloadInterface
                                 $classes[$instance->getMachineName()] = $reflectionClass->getName();
                             }
                         }
-                    } catch (\ReflectionException $e) {
+                    } catch (ReflectionException $e) {
                         // ignore
                     }
                 }
             }
-        } catch (\UnexpectedValueException $exception) {
+        } catch (UnexpectedValueException $exception) {
             $classes = self::$classes;
         }
 

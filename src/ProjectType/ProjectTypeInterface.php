@@ -19,12 +19,12 @@ interface ProjectTypeInterface
     public function getMachineName(): string;
 
     /**
-     * Returns list of directories the project should contain. If any directory is found, this class
+     * Returns list of directories/files the project should contain. If any item is found, this class
      * is assumed as a valid type
      *
      * @return string[]
      */
-    public function getDirs(): array;
+    public function getMatchableFiles(): array;
 
     /**
      * Returns supported types of operations for current project

@@ -1,8 +1,9 @@
 <?php
 
-namespace Rikudou\Installer\ProjectType;
+namespace Rikudou\Installer\ProjectType\Type;
 
 use Rikudou\Installer\Enums\OperationType;
+use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 
 class Symfony4ProjectType implements ProjectTypeInterface
 {
@@ -12,7 +13,7 @@ class Symfony4ProjectType implements ProjectTypeInterface
      *
      * @return array
      */
-    public function getDirs(): array
+    public function getMatchableFiles(): array
     {
         return [
             'config/packages',
