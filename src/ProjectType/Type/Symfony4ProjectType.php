@@ -5,7 +5,7 @@ namespace Rikudou\Installer\ProjectType\Type;
 use Rikudou\Installer\Enums\OperationType;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 
-class Symfony4ProjectType implements ProjectTypeInterface
+final class Symfony4ProjectType implements ProjectTypeInterface
 {
     /**
      * Returns list of directories the project should contain. If any directory is found, this class

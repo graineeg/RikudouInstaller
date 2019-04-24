@@ -2,7 +2,7 @@
 
 namespace Rikudou\Installer\Enums;
 
-class OperationType
+final class OperationType
 {
     public const COPY_FILES = 'copyFiles';
 

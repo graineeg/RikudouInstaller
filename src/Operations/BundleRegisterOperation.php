@@ -6,7 +6,7 @@ use Rikudou\Installer\Enums\OperationType;
 use Rikudou\Installer\Helper\AvailableOperationInterface;
 use Rikudou\Installer\Result\OperationResult;
 
-class BundleRegisterOperation extends AbstractOperation implements AvailableOperationInterface
+final class BundleRegisterOperation extends AbstractOperation implements AvailableOperationInterface
 {
     /**
      * @param string $path The path to the installation directory

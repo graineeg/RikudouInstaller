@@ -2,7 +2,7 @@
 
 namespace Rikudou\Installer\Enums;
 
-class MessageType
+final class MessageType
 {
     public const ERROR = 1 << 0;
 

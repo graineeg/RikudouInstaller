@@ -16,7 +16,7 @@ use Rikudou\Installer\Configuration\Config;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 use Rikudou\Installer\ProjectType\ProjectTypeMatcher;
 
-class Plugin implements PluginInterface, EventSubscriberInterface
+final class Plugin implements PluginInterface, EventSubscriberInterface
 {
     /**
      * @var bool

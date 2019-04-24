@@ -11,7 +11,7 @@ use Rikudou\ReflectionFile;
 use SplFileInfo;
 use UnexpectedValueException;
 
-class ProjectTypeMatcher implements PreloadInterface
+final class ProjectTypeMatcher implements PreloadInterface
 {
     private static $classes = null;
 

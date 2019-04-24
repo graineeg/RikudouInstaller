@@ -2,7 +2,7 @@
 
 namespace Rikudou\Installer\Configuration;
 
-class VersionDirectory
+final class VersionDirectory
 {
     /**
      * @var string

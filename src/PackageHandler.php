@@ -10,10 +10,9 @@ use Rikudou\Installer\Helper\AvailableOperationInterface;
 use Rikudou\Installer\Helper\SupportedProjectTypesInterface;
 use Rikudou\Installer\Operations\AbstractOperation;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
-use Rikudou\Installer\Result\OperationResult;
 use Rikudou\Installer\Result\OperationResultCollection;
 
-class PackageHandler
+final class PackageHandler
 {
     /**
      * @var PackageInterface

@@ -10,7 +10,7 @@ use ReflectionException;
 use Rikudou\Installer\Helper\PreloadInterface;
 use SplFileInfo;
 
-class Preloader
+final class Preloader
 {
     /**
      * @var Composer

@@ -6,7 +6,7 @@ use Rikudou\Installer\Enums\OperationType;
 use Rikudou\Installer\Helper\AvailableOperationInterface;
 use Rikudou\Installer\Result\OperationResult;
 
-class EnvironmentVariablesOperation extends AbstractOperation implements AvailableOperationInterface
+final class EnvironmentVariablesOperation extends AbstractOperation implements AvailableOperationInterface
 {
     private const ENV_FILES = [
         '.env.example',

@@ -7,7 +7,7 @@ use Composer\Package\PackageInterface;
 use Rikudou\Installer\Exception\ConfigurationException;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 
-class Config
+final class Config
 {
     /**
      * @var Composer

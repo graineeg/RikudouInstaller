@@ -5,7 +5,7 @@ namespace Rikudou\Installer\ProjectType\Type;
 use Rikudou\Installer\Enums\OperationType;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 
-class Drupal8ProjectType implements ProjectTypeInterface
+final class Drupal8ProjectType implements ProjectTypeInterface
 {
     /**
      * Returns the project friendly name for console output

@@ -6,7 +6,7 @@ use Rikudou\Installer\Enums\OperationType;
 use Rikudou\Installer\Helper\AvailableOperationInterface;
 use Rikudou\Installer\Result\OperationResult;
 
-class CopyFilesOperation extends AbstractOperation implements AvailableOperationInterface
+final class CopyFilesOperation extends AbstractOperation implements AvailableOperationInterface
 {
     /**
      * Copies all files from package to target directory in project root
