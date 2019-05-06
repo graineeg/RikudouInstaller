@@ -3,10 +3,10 @@
 namespace Rikudou\Installer\Operations;
 
 use Rikudou\Installer\Enums\OperationType;
-use Rikudou\Installer\Helper\AvailableOperationInterface;
+use Rikudou\Installer\Helper\AvailabilityAwareOperationInterface;
 use Rikudou\Installer\Result\OperationResult;
 
-final class EnvironmentVariablesOperation extends AbstractOperation implements AvailableOperationInterface
+final class EnvironmentVariablesOperation extends AbstractOperation implements AvailabilityAwareOperationInterface
 {
     private const ENV_FILES = [
         '.env.example',

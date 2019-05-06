@@ -6,7 +6,7 @@ use Composer\Composer;
 use Composer\Package\PackageInterface;
 use Rikudou\Installer\Configuration\Config;
 use Rikudou\Installer\Configuration\VersionDirectory;
-use Rikudou\Installer\Helper\AvailableOperationInterface;
+use Rikudou\Installer\Helper\AvailabilityAwareOperationInterface;
 use Rikudou\Installer\Helper\SupportedProjectTypesInterface;
 use Rikudou\Installer\Operations\AbstractOperation;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
@@ -96,7 +96,7 @@ final class PackageHandler
 
         $versions = $this->getVersions();
         foreach ($handlersMap as $handler) {
-            if ($handler instanceof AvailableOperationInterface) {
+            if ($handler instanceof AvailabilityAwareOperationInterface) {
                 if (!$handler->isAvailable($this->getPaths())) {
                     continue;
                 }
@@ -154,7 +154,7 @@ final class PackageHandler
                 $class = $handlers[$type];
                 /** @var AbstractOperation $handler */
                 $handler = new $class($this->package, $this->projectType, $this->composer);
-                if ($handler instanceof AvailableOperationInterface) {
+                if ($handler instanceof AvailabilityAwareOperationInterface) {
                     if (!$handler->isAvailable($paths)) {
                         continue;
                     }

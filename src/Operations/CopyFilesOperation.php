@@ -3,10 +3,10 @@
 namespace Rikudou\Installer\Operations;
 
 use Rikudou\Installer\Enums\OperationType;
-use Rikudou\Installer\Helper\AvailableOperationInterface;
+use Rikudou\Installer\Helper\AvailabilityAwareOperationInterface;
 use Rikudou\Installer\Result\OperationResult;
 
-final class CopyFilesOperation extends AbstractOperation implements AvailableOperationInterface
+final class CopyFilesOperation extends AbstractOperation implements AvailabilityAwareOperationInterface
 {
     /**
      * Copies all files from package to target directory in project root
@@ -90,13 +90,8 @@ final class CopyFilesOperation extends AbstractOperation implements AvailableOpe
                 if ($file->isDir()) {
                     @rmdir($target);
                 } else {
-                    assert(is_string($file->getRealPath()));
-                    $hashTarget = hash_file('sha1', $target);
-                    $hashSource = hash_file('sha1', $file->getRealPath());
-                    if ($hashSource === $hashTarget) {
-                        if (!@unlink($target)) {
-                            $result->addErrorMessage("<error>Could not delete file '${target}'</error>");
-                        }
+                    if (!@unlink($target)) {
+                        $result->addErrorMessage("<error>Could not delete file '${target}'</error>");
                     }
                 }
             }

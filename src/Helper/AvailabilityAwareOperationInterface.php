@@ -2,7 +2,7 @@
 
 namespace Rikudou\Installer\Helper;
 
-interface AvailableOperationInterface
+interface AvailabilityAwareOperationInterface
 {
     /**
      * Returns true if the operation is available for the current config, e.g. required files exist
