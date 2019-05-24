@@ -2,9 +2,12 @@
 
 namespace Rikudou\Installer\Operations;
 
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use Rikudou\Installer\Enums\OperationType;
 use Rikudou\Installer\Helper\AvailabilityAwareOperationInterface;
 use Rikudou\Installer\Result\OperationResult;
+use SplFileInfo;
 
 final class CopyFilesOperation extends AbstractOperation implements AvailabilityAwareOperationInterface
 {
@@ -22,16 +25,16 @@ final class CopyFilesOperation extends AbstractOperation implements Availability
 
         $directory = "{$path}/files";
         if (is_dir($directory)) {
-            /** @var \RecursiveDirectoryIterator $iterator */
-            $iterator = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator(
+            /** @var RecursiveDirectoryIterator $iterator */
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator(
                     $directory,
-                    \RecursiveDirectoryIterator::SKIP_DOTS
+                    RecursiveDirectoryIterator::SKIP_DOTS
                 ),
-                \RecursiveIteratorIterator::SELF_FIRST
+                RecursiveIteratorIterator::SELF_FIRST
             );
 
-            /** @var \SplFileInfo $file */
+            /** @var SplFileInfo $file */
             foreach ($iterator as $file) {
                 $target = "{$this->projectRootDir}/{$iterator->getSubPathname()}";
                 if ($file->isDir()) {
@@ -72,16 +75,16 @@ final class CopyFilesOperation extends AbstractOperation implements Availability
 
         $directory = "{$path}/files";
         if (is_dir($directory)) {
-            /** @var \RecursiveDirectoryIterator $iteratorPackage */
-            $iteratorPackage = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator(
+            /** @var RecursiveDirectoryIterator $iteratorPackage */
+            $iteratorPackage = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator(
                     $directory,
-                    \RecursiveDirectoryIterator::SKIP_DOTS
+                    RecursiveDirectoryIterator::SKIP_DOTS
                 ),
-                \RecursiveIteratorIterator::CHILD_FIRST
+                RecursiveIteratorIterator::CHILD_FIRST
             );
 
-            /** @var \SplFileInfo $file */
+            /** @var SplFileInfo $file */
             foreach ($iteratorPackage as $file) {
                 $target = "{$this->projectRootDir}/{$iteratorPackage->getSubPathname()}";
                 if (!file_exists($target)) {
