@@ -49,11 +49,11 @@ final class ProjectTypeMatcher implements PreloadInterface
                         return 0;
                     }
 
-                    return $instance1->getPriority() < $instance2->getPriority() ? -1 : 1;
+                    return $instance1->getPriority() < $instance2->getPriority() ? 1 : -1;
                 } elseif ($instance1 instanceof PrioritizedProjectTypeInterface && !$instance2 instanceof PrioritizedProjectTypeInterface) {
-                    return 1;
-                } elseif (!$instance1 instanceof PrioritizedProjectTypeInterface && $instance2 instanceof PrioritizedProjectTypeInterface) {
                     return -1;
+                } elseif (!$instance1 instanceof PrioritizedProjectTypeInterface && $instance2 instanceof PrioritizedProjectTypeInterface) {
+                    return 1;
                 }
 
                 return 0;
