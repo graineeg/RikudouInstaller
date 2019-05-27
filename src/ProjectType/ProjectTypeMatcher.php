@@ -43,14 +43,20 @@ final class ProjectTypeMatcher implements PreloadInterface
             ->customSort(function ($class1, $class2) {
                 $instance1 = new $class1;
                 $instance2 = new $class2;
-                assert($instance1 instanceof ProjectTypeInterface);
-                assert($instance2 instanceof ProjectTypeInterface);
 
-                if ($instance1->getPriority() === $instance2->getPriority()) {
-                    return 0;
+                if ($instance1 instanceof PrioritizedProjectTypeInterface && $instance2 instanceof PrioritizedProjectTypeInterface) {
+                    if ($instance1->getPriority() === $instance2->getPriority()) {
+                        return 0;
+                    }
+
+                    return $instance1->getPriority() < $instance2->getPriority() ? -1 : 1;
+                } elseif ($instance1 instanceof PrioritizedProjectTypeInterface && !$instance2 instanceof PrioritizedProjectTypeInterface) {
+                    return 1;
+                } elseif (!$instance1 instanceof PrioritizedProjectTypeInterface && $instance2 instanceof PrioritizedProjectTypeInterface) {
+                    return -1;
                 }
 
-                return $instance1->getPriority() < $instance2->getPriority() ? -1 : 1;
+                return 0;
             });
 
         foreach ($classes as $class) {

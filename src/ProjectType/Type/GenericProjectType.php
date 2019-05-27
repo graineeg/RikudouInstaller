@@ -3,9 +3,10 @@
 namespace Rikudou\Installer\ProjectType\Type;
 
 use Rikudou\Installer\Enums\OperationType;
+use Rikudou\Installer\ProjectType\PrioritizedProjectTypeInterface;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 
-class GenericProjectType implements ProjectTypeInterface
+class GenericProjectType implements PrioritizedProjectTypeInterface
 {
     /**
      * Returns the project friendly name for console output
