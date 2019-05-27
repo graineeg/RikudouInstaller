@@ -6,6 +6,7 @@ use Composer\Composer;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionException;
+use rikudou\ArraySort;
 use Rikudou\Installer\Helper\PreloadInterface;
 use Rikudou\ReflectionFile;
 use SplFileInfo;
@@ -35,6 +36,22 @@ final class ProjectTypeMatcher implements PreloadInterface
 
             return new $class;
         }
+
+        $classes = (new ArraySort($classes))
+            ->byValue()
+            ->discardKey()
+            ->customSort(function ($class1, $class2) {
+                $instance1 = new $class1;
+                $instance2 = new $class2;
+                assert($instance1 instanceof ProjectTypeInterface);
+                assert($instance2 instanceof ProjectTypeInterface);
+
+                if ($instance1->getPriority() === $instance2->getPriority()) {
+                    return 0;
+                }
+
+                return $instance1->getPriority() < $instance2->getPriority() ? -1 : 1;
+            });
 
         foreach ($classes as $class) {
             /** @var ProjectTypeInterface $instance */
