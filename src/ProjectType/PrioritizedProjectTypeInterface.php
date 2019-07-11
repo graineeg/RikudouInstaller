@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Rikudou\Installer\ProjectType;
-
 
 interface PrioritizedProjectTypeInterface extends ProjectTypeInterface
 {

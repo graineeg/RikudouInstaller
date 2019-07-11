@@ -4,7 +4,6 @@ namespace Rikudou\Installer\ProjectType\Type;
 
 use Rikudou\Installer\Enums\OperationType;
 use Rikudou\Installer\ProjectType\PrioritizedProjectTypeInterface;
-use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 
 final class Drupal8ProjectType implements PrioritizedProjectTypeInterface
 {
