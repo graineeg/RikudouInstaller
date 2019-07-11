@@ -4,6 +4,7 @@ namespace Rikudou\Installer\Configuration;
 
 use Composer\Composer;
 use Composer\Package\PackageInterface;
+use function Rikudou\Installer\array_merge_recursive;
 use Rikudou\Installer\Exception\ConfigurationException;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 
