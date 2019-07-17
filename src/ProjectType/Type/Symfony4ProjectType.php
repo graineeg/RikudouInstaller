@@ -33,6 +33,7 @@ final class Symfony4ProjectType implements PrioritizedProjectTypeInterface
             OperationType::COPY_FILES,
             OperationType::ENVIRONMENT_VARIABLES,
             OperationType::REGISTER_SYMFONY_BUNDLE,
+            OperationType::GITIGNORE,
         ];
     }
 

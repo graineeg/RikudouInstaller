@@ -52,6 +52,7 @@ final class Drupal8ProjectType implements PrioritizedProjectTypeInterface
         return [
             OperationType::COPY_FILES,
             OperationType::ENVIRONMENT_VARIABLES,
+            OperationType::GITIGNORE,
         ];
     }
 

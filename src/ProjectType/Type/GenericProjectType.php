@@ -53,6 +53,7 @@ class GenericProjectType implements PrioritizedProjectTypeInterface
         return [
             OperationType::COPY_FILES,
             OperationType::ENVIRONMENT_VARIABLES,
+            OperationType::GITIGNORE,
         ];
     }
 
