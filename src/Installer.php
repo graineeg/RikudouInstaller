@@ -16,7 +16,7 @@ use Rikudou\Installer\Helper\PreloadInterface;
 use Rikudou\Installer\ProjectType\ProjectTypeGetter;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 
-class Installer implements PluginInterface, EventSubscriberInterface
+abstract class Installer implements PluginInterface, EventSubscriberInterface
 {
     /**
      * @var Composer
