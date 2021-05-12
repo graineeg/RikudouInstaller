@@ -2,6 +2,7 @@
   "name": "rikudou/installer",
   "type": "composer-plugin",
   "license": "WTFPL",
+  "minimum-stability": "dev",
   "description": "Composer plugin for automatic configuration of packages",
   "authors": [
     {
