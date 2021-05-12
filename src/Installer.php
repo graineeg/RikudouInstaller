@@ -16,7 +16,7 @@ use Rikudou\Installer\Helper\PreloadInterface;
 use Rikudou\Installer\ProjectType\ProjectTypeGetter;
 use Rikudou\Installer\ProjectType\ProjectTypeInterface;
 
-abstract class Installer implements PluginInterface, EventSubscriberInterface
+class Installer implements PluginInterface, EventSubscriberInterface
 {
     /**
      * @var Composer
@@ -223,5 +223,20 @@ abstract class Installer implements PluginInterface, EventSubscriberInterface
                 continue;
             }
         }
+    }
+    
+    public function deactivate(Composer $composer, IOInterface $io)
+    {
+        $this->composer = $composer;
+        $this->io = $io;
+
+        $this->enabled = $this->composer->getPackage()->getExtra()['rikudou']['installer']['enabled'] ?? false;
+        $this->excluded = $this->composer->getPackage()->getExtra()['rikudou']['installer']['exclude'] ?? [];
+
+        $this->preload();
+    }
+
+    public function uninstall(Composer $composer, IOInterface $io)
+    {
     }
 }
