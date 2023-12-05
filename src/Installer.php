@@ -234,4 +234,19 @@ class Installer implements PluginInterface, EventSubscriberInterface
             }
         }
     }
+    
+    public function deactivate(Composer $composer, IOInterface $io)
+    {
+        $this->composer = $composer;
+        $this->io = $io;
+
+        $this->enabled = $this->composer->getPackage()->getExtra()['rikudou']['installer']['enabled'] ?? false;
+        $this->excluded = $this->composer->getPackage()->getExtra()['rikudou']['installer']['exclude'] ?? [];
+
+        $this->preload();
+    }
+
+    public function uninstall(Composer $composer, IOInterface $io)
+    {
+    }
 }
