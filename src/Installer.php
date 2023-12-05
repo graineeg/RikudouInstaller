@@ -101,16 +101,6 @@ class Installer implements PluginInterface, EventSubscriberInterface
         $this->preload();
     }
 
-    public function deactivate(Composer $composer, IOInterface $io)
-    {
-        // Not needed
-    }
-
-    public function uninstall(Composer $composer, IOInterface $io)
-    {
-        // Not needed
-    }
-
     /**
      * Tries to uninstall the package
      *
