@@ -41,7 +41,7 @@ class EnvironmentVariablesOperation extends AbstractOperation implements Availab
                 $content .= "###END-Rikudou-Installer-{$this->packageName}###";
 
                 foreach (self::ENV_FILES as $file) {
-                    $targetEnvFile = "{$this->projectRootDir}/${file}";
+                    $targetEnvFile = "{$this->projectRootDir}/{$file}";
                     if (file_exists($targetEnvFile)) {
                         if (!file_put_contents($targetEnvFile, $content, FILE_APPEND | LOCK_EX)) {
                             $result->addErrorMessage("<error>Could not copy env variables from {$this->packageName}</error>");

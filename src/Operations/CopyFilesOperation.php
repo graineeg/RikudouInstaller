@@ -36,13 +36,13 @@ class CopyFilesOperation extends AbstractOperation implements AvailableOperation
                     if ($file->isDir()) {
                         if (!is_dir($target)) {
                             if (!mkdir($target)) {
-                                $result->addErrorMessage("<error>Could not create target directory '${target}'</error>");
+                                $result->addErrorMessage("<error>Could not create target directory '{$target}'</error>");
                             }
                         }
                     } elseif (!file_exists($target)) {
                         assert(is_string($file->getRealPath()));
                         if (!copy($file->getRealPath(), $target)) {
-                            $result->addErrorMessage("<error>Could not copy file to '${target}'</error>");
+                            $result->addErrorMessage("<error>Could not copy file to '{$target}'</error>");
                         }
                     }
                 }
@@ -95,7 +95,7 @@ class CopyFilesOperation extends AbstractOperation implements AvailableOperation
                         $hashSource = hash_file('sha1', $file->getRealPath());
                         if ($hashSource === $hashTarget) {
                             if (!@unlink($target)) {
-                                $result->addErrorMessage("<error>Could not delete file '${target}'</error>");
+                                $result->addErrorMessage("<error>Could not delete file '{$target}'</error>");
                             }
                         }
                     }
