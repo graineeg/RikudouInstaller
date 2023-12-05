@@ -13,7 +13,7 @@
   "require": {
     "php": "^7.4||^8.0",
     "composer-plugin-api": "^2.0",
-    "rikudou/reflection-file": "^1.2.1"
+    "rikudou/reflection-file": "^2.0"
   },
   "autoload": {
     "psr-4": {
